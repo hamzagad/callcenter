@@ -62,7 +62,7 @@ class paloSantoColaEntrante
         }
         
         // Selección de estado de la cola
-        if (!is_null($status) && $status != 'all') {
+        if (!is_null($status) && $status!='all') {
             if (!in_array($status, array('A', 'I'))) {
                 $this->errMsg = '(internal) Invalid status, must be A,I';
                 return false;

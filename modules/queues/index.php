@@ -22,8 +22,8 @@
   $Id: default.conf.php,v 1.1 2008-09-03 01:09:56 Alex Villacís Lasso Exp $
 */
 
-require_once __DIR__ . "/libs/paloSantoDB.class.php";
-require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
+require_once "libs/paloSantoDB.class.php";
+require_once "modules/agent_console/libs/issabel2.lib.php";
 
 function _moduleContent(&$smarty,$module_name)
 {
@@ -50,16 +50,20 @@ function _moduleContent(&$smarty,$module_name)
     $contenidoModulo = '';
     $sAction = 'list_queues';
     if (isset($_GET['action'])) $sAction = $_GET['action'];
-    return match ($sAction) {
-        'new_queue' => crearCola($pDB, $smarty, $module_name, $local_templates_dir),
-        'edit_queue' => modificarCola($pDB, $smarty, $module_name, $local_templates_dir),
-        default => listarColas($pDB, $smarty, $module_name, $local_templates_dir),
-    };
+    switch ($sAction) {
+    case 'new_queue':
+        return crearCola($pDB, $smarty, $module_name, $local_templates_dir);
+    case 'edit_queue':
+        return modificarCola($pDB, $smarty, $module_name, $local_templates_dir);
+    case 'list_queue':
+    default:        
+        return listarColas($pDB, $smarty, $module_name, $local_templates_dir);
+    }
 }
 
 function listarColas($pDB, $smarty, $module_name, $local_templates_dir)
 {
-    require_once __DIR__ . "/libs/paloSantoGrid.class.php";
+    require_once "libs/paloSantoGrid.class.php";
     global $arrLang;
     
     $oColas = new paloSantoColaEntrante($pDB);
@@ -106,7 +110,7 @@ function listarColas($pDB, $smarty, $module_name, $local_templates_dir)
     $oGrid->setColumns(array('', _tr('Name Queue'), _tr('Status'), _tr('Options')));
     
     $arrDataQueues=array();
-    if($total != 0 ){
+    if($total !=0 ){
         // Consulta de las colas
         $arrDataQueues = $oColas->leerColas(NULL, $sEstado, $limit, $offset);
         if (!is_array($arrDataQueues)) {
@@ -138,7 +142,8 @@ function listarColas($pDB, $smarty, $module_name, $local_templates_dir)
             '<td align="left"><select name="cbo_estado" onchange="submit();">'.combo($arrStatus, $sEstado).'</select></td>'.
         '</tr></table>'
     );
-    return $oGrid->fetchGrid(array(), $arrData, $arrLang);
+    $sContenido = $oGrid->fetchGrid(array(), $arrData, $arrLang);
+    return $sContenido;
 }
 
 function crearCola($pDB, $smarty, $module_name, $local_templates_dir)
@@ -158,8 +163,8 @@ function modificarCola($pDB, $smarty, $module_name, $local_templates_dir)
 
 function formularioModificarCola($pDB, $smarty, $module_name, $local_templates_dir, $idCola)
 {
-    require_once __DIR__ . "/libs/paloSantoForm.class.php";
-    require_once __DIR__ . "/libs/paloSantoQueue.class.php";
+    require_once "libs/paloSantoForm.class.php";
+    require_once "libs/paloSantoQueue.class.php";
 
     // Si se ha indicado cancelar, volver a listado sin hacer nada más
     if (isset($_POST['cancel'])) {
@@ -259,8 +264,8 @@ function formularioModificarCola($pDB, $smarty, $module_name, $local_templates_d
             $smarty->assign("mb_title", _tr("Validation Error"));
             $arrErrores=$oForm->arrErroresValidacion;
             $strErrorMsg = "<b>"._tr('The following fields contain errors').":</b><br/>";
-            if(is_array($arrErrores) && $arrErrores !== []){
-                foreach(array_keys($arrErrores) as $k) {
+            if(is_array($arrErrores) && count($arrErrores) > 0){
+                foreach($arrErrores as $k=>$v) {
                     $strErrorMsg .= "$k, ";
                 }
             }
@@ -286,11 +291,11 @@ function formularioModificarCola($pDB, $smarty, $module_name, $local_templates_d
 if (!function_exists('getParameter')) {
 function getParameter($parameter)
 {
-    if (isset($_POST[$parameter])) {
+    if(isset($_POST[$parameter]))
         return $_POST[$parameter];
-    } elseif (isset($_GET[$parameter])) {
+    else if(isset($_GET[$parameter]))
         return $_GET[$parameter];
-    } else
+    else
         return null;
 }
 }

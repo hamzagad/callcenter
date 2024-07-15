@@ -48,11 +48,11 @@ function _tr($s)
 if (!function_exists('getParameter')) {
 function getParameter($parameter)
 {
-    if (isset($_POST[$parameter])) {
+    if(isset($_POST[$parameter]))
         return $_POST[$parameter];
-    } elseif (isset($_GET[$parameter])) {
+    else if(isset($_GET[$parameter]))
         return $_GET[$parameter];
-    } else
+    else
         return null;
 }
 }
@@ -167,7 +167,7 @@ function existeSoporteTituloFramework()
         if ($h) {
             while (!feof($h)) {
             	if (strpos(fgets($h), '$title') !== FALSE) {
-                    $bExisteSoporteTitulo = TRUE;
+            		$bExisteSoporteTitulo = TRUE;
                     break;
             	}
             }

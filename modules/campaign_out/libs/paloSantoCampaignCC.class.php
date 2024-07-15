@@ -21,7 +21,7 @@
   +----------------------------------------------------------------------+
   $Id: paloSantoCampaignCC.class.php,v 1.2 2008/06/06 07:15:07 cbarcos Exp $ */
 
-include_once(__DIR__ . "/libs/paloSantoDB.class.php");
+include_once("libs/paloSantoDB.class.php");
 
 define('REGEXP_FECHA_VALIDA', '/^\d{4}-\d{2}-\d{2}$/');
 define('REGEXP_HORA_VALIDA', '/^\d{2}:\d{2}$/');
@@ -89,7 +89,7 @@ SQL_SELECT_CAMPAIGNS;
         	$paramWhere[] = 'id = ?';
             $paramSQL[] = $id_campaign;
         }
-        if ($paramWhere !== []) $sPeticionSQL .= ' WHERE '.implode(' AND ', $paramWhere);
+        if (count($paramWhere) > 0) $sPeticionSQL .= ' WHERE '.implode(' AND ', $paramWhere);
         $sPeticionSQL .= ' ORDER BY datetime_init, daytime_init';
         if (!is_null($limit)) {
         	$sPeticionSQL .= ' LIMIT ? OFFSET ?';
@@ -225,7 +225,9 @@ SQL_INSERT_CAMPAIGN;
     function addCampaignForm($id_campania,$formularios)
     {
         if (!is_array($formularios)) {
-            $formularios = $formularios == '' ? array() : explode(',', $formularios);
+            if ($formularios == '')
+                $formularios = array();
+            else $formularios = explode(',', $formularios);
         }
         foreach ($formularios as $id_form) {
         	$r = $this->_DB->genQuery(

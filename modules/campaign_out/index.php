@@ -21,13 +21,13 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-require_once __DIR__ . "/libs/paloSantoForm.class.php";
-require_once __DIR__ . "/libs/paloSantoTrunk.class.php";
-require_once __DIR__ . "/libs/misc.lib.php";
-include_once __DIR__ . "/libs/paloSantoConfig.class.php";
-include_once __DIR__ . "/libs/paloSantoGrid.class.php";
+require_once "libs/paloSantoForm.class.php";
+require_once "libs/paloSantoTrunk.class.php";
+require_once "libs/misc.lib.php";
+include_once "libs/paloSantoConfig.class.php";
+include_once "libs/paloSantoGrid.class.php";
 
-require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
+require_once "modules/agent_console/libs/issabel2.lib.php";
 
 function _moduleContent(&$smarty, $module_name)
 {
@@ -62,20 +62,20 @@ function _moduleContent(&$smarty, $module_name)
     $sAction = 'list_campaign';
     if (isset($_GET['action'])) $sAction = $_GET['action'];
     switch ($sAction) {
-        case 'new_campaign':
-            $contenidoModulo = newCampaign($pDB, $smarty, $module_name, $local_templates_dir);
-            break;
-        case 'edit_campaign':
-            $contenidoModulo = editCampaign($pDB, $smarty, $module_name, $local_templates_dir);
-            break;
-        case 'csv_data':
-            $contenidoModulo = displayCampaignCSV($pDB, $smarty, $module_name, $local_templates_dir);
-            break;
-        case 'list_campaign':
-        default:
-            $contenidoModulo = listCampaign($pDB, $smarty, $module_name, $local_templates_dir);
-            break;
-        }
+    case 'new_campaign':
+        $contenidoModulo = newCampaign($pDB, $smarty, $module_name, $local_templates_dir);
+        break;
+    case 'edit_campaign':
+        $contenidoModulo = editCampaign($pDB, $smarty, $module_name, $local_templates_dir);
+        break;
+    case 'csv_data':
+        $contenidoModulo = displayCampaignCSV($pDB, $smarty, $module_name, $local_templates_dir);
+        break;
+    case 'list_campaign':
+    default:
+        $contenidoModulo = listCampaign($pDB, $smarty, $module_name, $local_templates_dir);
+        break;
+    }
 
     return $contenidoModulo;
 }
@@ -97,7 +97,7 @@ function listCampaign($pDB, $smarty, $module_name, $local_templates_dir)
             $smarty->assign("mb_title",_tr('Message'));
             $smarty->assign("mb_message", _tr('Campaign was deleted successfully'));
         } else {
-            $msg_error = ($oCampaign->errMsg != "") ? "<br/>".$oCampaign->errMsg:"";
+            $msg_error = ($oCampaign->errMsg!="") ? "<br/>".$oCampaign->errMsg:"";
             $smarty->assign("mb_title", _tr('Delete Error'));
             $smarty->assign("mb_message", _tr('Error when deleting the Campaign').$msg_error);
         }
@@ -200,10 +200,10 @@ function listCampaign($pDB, $smarty, $module_name, $local_templates_dir)
 function campaignStatusLabel($st)
 {
     switch ($st) {
-        case 'A': return _tr('Active');
-        case 'I': return _tr('Inactive');
-        case 'T': return _tr('Finish');
-        default: return '???';
+    case 'A': return _tr('Active');
+    case 'I': return _tr('Inactive');
+    case 'T': return _tr('Finish');
+    default: return '???';
     }
 }
 
@@ -226,8 +226,8 @@ function editCampaign($pDB, $smarty, $module_name, $local_templates_dir)
 
 function formEditCampaign($pDB, $smarty, $module_name, $local_templates_dir, $id_campaign = NULL)
 {
-    require_once __DIR__ . "/libs/paloSantoQueue.class.php";
-    require_once __DIR__ . "/modules/form_designer/libs/paloSantoDataForm.class.php";
+    require_once "libs/paloSantoQueue.class.php";
+    require_once "modules/form_designer/libs/paloSantoDataForm.class.php";
 
     // Si se ha indicado cancelar, volver a listado sin hacer nada más
     if (isset($_POST['cancel'])) {
@@ -399,8 +399,8 @@ function formEditCampaign($pDB, $smarty, $module_name, $local_templates_dir, $id
                 $smarty->assign("mb_title", _tr("Validation Error"));
                 $arrErrores=$oForm->arrErroresValidacion;
                 $strErrorMsg = "<b>"._tr('The following fields contain errors').":</b><br/>";
-                if(is_array($arrErrores) && $arrErrores !== []){
-                    foreach(array_keys($arrErrores) as $k) {
+                if(is_array($arrErrores) && count($arrErrores) > 0){
+                    foreach($arrErrores as $k=>$v) {
                         $strErrorMsg .= "$k, ";
                     }
                 }
@@ -501,10 +501,11 @@ function formEditCampaign($pDB, $smarty, $module_name, $local_templates_dir, $id
     }
 
     $smarty->assign('icon', 'images/kfaxview.png');
-    return $oForm->fetchForm(
+    $contenidoModulo = $oForm->fetchForm(
         "$local_templates_dir/new.tpl",
         is_null($id_campaign) ? _tr("New Campaign") : _tr("Edit Campaign").' "'.$_POST['nombre'].'"',
         $_POST);
+    return $contenidoModulo;
 }
 
 function getFormCampaign($arrDataTrunks, $arrDataQueues, $arrSelectForm,
@@ -514,25 +515,21 @@ function getFormCampaign($arrDataTrunks, $arrDataQueues, $arrSelectForm,
     $i = 0;
     for( $i=-1;$i<24;$i++)
     {
-        if ($i == -1) {
-            $horas["HH"] = "HH";
-        } elseif ($i < 10) {
-            $horas["0$i"] = '0'.$i;
-        } else             $horas[$i] = $i;
+        if($i == -1)     $horas["HH"] = "HH";
+        else if($i < 10) $horas["0$i"] = '0'.$i;
+        else             $horas[$i] = $i;
     }
 
     $minutos = array();
     $i = 0;
     for( $i=-1;$i<60;$i++)
     {
-        if ($i == -1) {
-            $minutos["MM"] = "MM";
-        } elseif ($i < 10) {
-            $minutos["0$i"] = '0'.$i;
-        } else             $minutos[$i] = $i;
+        if($i == -1)     $minutos["MM"] = "MM";
+        else if($i < 10) $minutos["0$i"] = '0'.$i;
+        else             $minutos[$i] = $i;
     }
 
-    return array(
+    $formCampos = array(
         'nombre'    =>    array(
             "LABEL"                => _tr("Name Campaign"),
             "REQUIRED"               => "yes",
@@ -692,6 +689,8 @@ function getFormCampaign($arrDataTrunks, $arrDataQueues, $arrSelectForm,
 	          "VALIDATION_EXTRA_PARAM" => "",
 	      ),
     );
+
+    return $formCampos;
 }
 
 // TODO: validar esta funcion para verificar para qué es necesario escapar.
@@ -774,8 +773,8 @@ function displayCampaignCSV($pDB, $smarty, $module_name, $local_templates_dir)
                     $lineaEspaciador,
                     array_fill(0, count($datosCampania['FORMS'][$id_form]['LABEL']), '"FORMULARIO"')); // TODO: internacionalizar
             }
-            $sDatosCSV .= implode(',', $lineaEspaciador)."\r\n";
-            $sDatosCSV .= implode(',', $lineaCSV)."\r\n";
+            $sDatosCSV .= join(',', $lineaEspaciador)."\r\n";
+            $sDatosCSV .= join(',', $lineaCSV)."\r\n";
 
             // Datos del archivo CSV
             foreach ($datosCampania['BASE']['DATA'] as $tuplaDatos) {
@@ -796,7 +795,7 @@ function displayCampaignCSV($pDB, $smarty, $module_name, $local_templates_dir)
                     $lineaCSV = array_merge($lineaCSV, array_map('csv_replace', $dataList));
                 }
 
-                $sDatosCSV .= implode(',', $lineaCSV)."\r\n";
+                $sDatosCSV .= join(',', $lineaCSV)."\r\n";
             }
         }
     }

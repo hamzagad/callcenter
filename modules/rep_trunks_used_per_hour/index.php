@@ -21,9 +21,9 @@
   +----------------------------------------------------------------------+
   $Id: index.php,v 1.2 2009/07/27 13:10:24 dlopez Exp $ */
 //include issabel framework
-include_once __DIR__ . "/libs/paloSantoGrid.class.php";
-include_once __DIR__ . "/libs/paloSantoForm.class.php";
-include_once __DIR__ . "/libs/paloSantoTrunk.class.php";//Trunks
+include_once "libs/paloSantoGrid.class.php";
+include_once "libs/paloSantoForm.class.php";
+include_once "libs/paloSantoTrunk.class.php";//Trunks
 
 if (!function_exists('_tr')) {
     function _tr($s)
@@ -54,7 +54,7 @@ function _moduleContent(&$smarty, $module_name)
     //include module files
     include_once "modules/$module_name/configs/default.conf.php";
     include_once "modules/$module_name/libs/paloSantoReportedeTroncalesusadasporHoraeneldia.class.php";
-    include_once __DIR__ . "/libs/paloSantoConfig.class.php";
+    include_once "libs/paloSantoConfig.class.php";
 
     $base_dir=dirname($_SERVER['SCRIPT_FILENAME']);
 
@@ -83,8 +83,12 @@ function _moduleContent(&$smarty, $module_name)
     //actions
     $accion = getAction();
     $content = "";
-    $content = reportReportedeTroncalesusadasporHoraeneldia($smarty, $module_name, $local_templates_dir, $pDB, $arrConf, $pDB_asterisk);
-    // break;
+
+    switch($accion){
+        default:
+            $content = reportReportedeTroncalesusadasporHoraeneldia($smarty, $module_name, $local_templates_dir, $pDB, $arrConf, $pDB_asterisk);
+            break;
+    }
     return $content;
 }
 
@@ -186,7 +190,7 @@ function reportReportedeTroncalesusadasporHoraeneldia($smarty, $module_name, $lo
             );
             foreach (array_keys($total) as $k) $total[$k] += $tupla[$k];
         }
-        $sTagInicio = ($bExportando) ? '' : '<b>';
+        $sTagInicio = (!$bExportando) ? '<b>' : '';
         $sTagFinal = ($sTagInicio != '') ? '</b>' : '';
         $arrData[] = array(
             $sTagInicio._tr('TOTAL').$sTagFinal,
@@ -199,7 +203,7 @@ function reportReportedeTroncalesusadasporHoraeneldia($smarty, $module_name, $lo
     }
 
     //begin section filter
-    $arrFormFilterReportedeTroncalesusadasporHoraeneldia = createFieldFilter();
+    $arrFormFilterReportedeTroncalesusadasporHoraeneldia = createFieldFilter($arrTrunk);
     $smarty->assign("SHOW", _tr("Show"));
     $oFilterForm = new paloForm($smarty, $arrFormFilterReportedeTroncalesusadasporHoraeneldia);
 
@@ -266,7 +270,7 @@ function reportReportedeTroncalesusadasporHoraeneldia($smarty, $module_name, $lo
     
 function createFieldFilter($arrTrunk){
 
-    return array(
+    $arrFormElements = array(
             "filter_field" => array("LABEL"                  => _tr("Trunk"),
                                     "REQUIRED"               => "no",
                                     "INPUT_TYPE"             => "text",
@@ -295,6 +299,7 @@ function createFieldFilter($arrTrunk){
                                     "VALIDATION_TYPE"        => "ereg",
                                     "VALIDATION_EXTRA_PARAM" => "^[[:digit:]]{1,2}[[:space:]]+[[:alnum:]]{3}[[:space:]]+[[:digit:]]{4}$"),
                     );
+    return $arrFormElements;
 }
 
 function obtener_nuevas_trunks($pDB, $pDB_asterisk)
@@ -311,26 +316,24 @@ function obtener_nuevas_trunks($pDB, $pDB_asterisk)
 if (!function_exists('getParameter')) {
 function getParameter($parameter)
 {
-    if (isset($_POST[$parameter])) {
+    if(isset($_POST[$parameter]))
         return $_POST[$parameter];
-    } elseif (isset($_GET[$parameter])) {
+    else if(isset($_GET[$parameter]))
         return $_GET[$parameter];
-    } else
+    else
         return null;
 }
 }
 
 function getAction()
 {
-    if (getParameter("show")) {
-        //Get parameter by POST (submit)
+    if(getParameter("show")) //Get parameter by POST (submit)
         return "show";
-    } elseif (getParameter("new")) {
+    else if(getParameter("new"))
         return "new";
-    } elseif (getParameter("action")=="show") {
-        //Get parameter by GET (command pattern, links)
+    else if(getParameter("action")=="show") //Get parameter by GET (command pattern, links)
         return "show";
-    } else
+    else
         return "report";
 }
 ?>

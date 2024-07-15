@@ -23,8 +23,11 @@
 
 class paloContactInsert
 {
+    private $_file_name;
+    private $_list_name;
+    private $_id_campaign;
     private $_id_list;
-    private int $_contact_count;
+    private $_contact_count;
     private $_db;
     private $_sth_list;
     private $_sth_dnc;
@@ -32,11 +35,14 @@ class paloContactInsert
     private $_sth_attribute;
     public $errMsg = NULL;
 
-    function __construct($db, $_id_campaign, $_list_name, $_file_name)
+    function __construct($db, $idCampaign, $listName, $fileName)
     {
         if (get_class($db) == 'paloDB') $db = $db->conn;
         if (get_class($db) != 'PDO') die ('Expected PDO, got '.get_class($db));
         $this->_db = $db;
+        $this->_id_campaign = $idCampaign;
+        $this->_list_name = $listName;
+        $this->_file_name = $fileName;
         $this->_contact_count = 0;
 
         $this->_sth_list = $this->_db->prepare(

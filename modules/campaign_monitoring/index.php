@@ -22,9 +22,9 @@
   $Id: default.conf.php,v 1.1.1.1 2007/03/23 00:13:58 elandivar Exp $ */
 
 
-require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
-require_once __DIR__ . "/modules/agent_console/libs/JSON.php";
-require_once __DIR__ . "/modules/agent_console/libs/paloSantoConsola.class.php";
+require_once "modules/agent_console/libs/issabel2.lib.php";
+require_once "modules/agent_console/libs/JSON.php";
+require_once "modules/agent_console/libs/paloSantoConsola.class.php";
 
 function _moduleContent(&$smarty, $module_name)
 {
@@ -52,22 +52,22 @@ function _moduleContent(&$smarty, $module_name)
 
     // Procesar los eventos AJAX.
     switch (getParameter('action')) {
-        case 'getCampaigns':
-            $sContenido = manejarMonitoreo_getCampaigns($module_name, $smarty, $local_templates_dir);
-            break;
-        case 'getCampaignDetail':
-            $sContenido = manejarMonitoreo_getCampaignDetail($module_name, $smarty, $local_templates_dir);
-            break;
-        case 'checkStatus':
-            $sContenido = manejarMonitoreo_checkStatus($module_name, $smarty, $local_templates_dir);
-            break;
-        case 'loadPreviousLogEntries':
-            $sContenido = manejarMonitoreo_loadPreviousLogEntries($module_name, $smarty, $local_templates_dir);
-            break;
-        default:
-            // Página principal con plantilla
-            $sContenido = manejarMonitoreo_HTML($module_name, $smarty, $local_templates_dir);
-        }
+    case 'getCampaigns':
+        $sContenido = manejarMonitoreo_getCampaigns($module_name, $smarty, $local_templates_dir);
+        break;
+    case 'getCampaignDetail':
+        $sContenido = manejarMonitoreo_getCampaignDetail($module_name, $smarty, $local_templates_dir);
+        break;
+    case 'checkStatus':
+        $sContenido = manejarMonitoreo_checkStatus($module_name, $smarty, $local_templates_dir);
+        break;
+    case 'loadPreviousLogEntries':
+        $sContenido = manejarMonitoreo_loadPreviousLogEntries($module_name, $smarty, $local_templates_dir);
+        break;
+    default:
+        // Página principal con plantilla
+        $sContenido = manejarMonitoreo_HTML($module_name, $smarty, $local_templates_dir);
+    }
     return $sContenido;
 }
 
@@ -189,7 +189,7 @@ function manejarMonitoreo_getCampaignDetail($module_name, $smarty, $sDirLocalPla
         $respuesta['message'] = _tr('Invalid campaign ID');
     } else {
         $oPaloConsola = new PaloSantoConsola();
-        if ($respuesta['status'] === 'success') {
+        if ($respuesta['status'] == 'success') {
         	$infoCampania = $oPaloConsola->leerInfoCampania($sTipoCampania, $sIdCampania);
             if (!is_array($infoCampania)) {
             	$respuesta['status'] = 'error';
@@ -676,18 +676,20 @@ function manejarMonitoreo_checkStatus($module_name, $smarty, $sDirLocalPlantilla
                         ));
 
                         if ($evento['call_type'] == 'incoming') {
-                            restarContadorLlamada('Success', $estadoCliente, $respuesta);
+                        	restarContadorLlamada('Success', $estadoCliente, $respuesta);
                             agregarContadorLlamada('Finished', $estadoCliente, $respuesta);
                             agregarContadorLlamada('Total', $estadoCliente, $respuesta);
                             $respuesta['duration'] = $evento['duration'];
-                        } elseif ($evento['shortcall']) {
-                            restarContadorLlamada('Success', $estadoCliente, $respuesta);
-                            agregarContadorLlamada('ShortCall', $estadoCliente, $respuesta);
                         } else {
-                       		// Se actualiza Finished para actualizar estadísticas
-                               agregarContadorLlamada('Finished', $estadoCliente, $respuesta);
-                               $respuesta['duration'] = $evento['duration'];
-                       	}
+                        	if ($evento['shortcall']) {
+                        		restarContadorLlamada('Success', $estadoCliente, $respuesta);
+                                agregarContadorLlamada('ShortCall', $estadoCliente, $respuesta);
+                        	} else {
+                        		// Se actualiza Finished para actualizar estadísticas
+                                agregarContadorLlamada('Finished', $estadoCliente, $respuesta);
+                                $respuesta['duration'] = $evento['duration'];
+                        	}
+                        }
                         if (isset($respuesta['duration'])) {
                         	$estadoCliente['stats']['total_sec'] += $respuesta['duration'];
                             if ($estadoCliente['stats']['max_duration'] < $respuesta['duration'])
@@ -782,8 +784,8 @@ function agregarContadorLlamada($new_status, &$estadoCliente, &$respuesta)
 function formatoLlamadaNoConectada($activecall)
 {
     $sFechaHoy = date('Y-m-d');
-    $sDesde = (is_null($activecall['queuestart']))
-        ? $activecall['dialstart'] : $activecall['queuestart'];
+    $sDesde = (!is_null($activecall['queuestart']))
+        ? $activecall['queuestart'] : $activecall['dialstart'];
     if (strpos($sDesde, $sFechaHoy) === 0)
         $sDesde = substr($sDesde, strlen($sFechaHoy) + 1);
     $sEstado = ($activecall['callstatus'] == 'placing' && !is_null($activecall['trunk']))
@@ -818,7 +820,7 @@ function formatoAgente($agent)
         $sDesde = $agent['callinfo']['linkstart'];
         break;
     }
-    if (str_starts_with($sDesde, $sFechaHoy))
+    if (strpos($sDesde, $sFechaHoy) === 0)
         $sDesde = substr($sDesde, strlen($sFechaHoy) + 1);
     return array(
         'agent'         =>  $agent['agentchannel'],

@@ -21,7 +21,7 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-include_once(__DIR__ . "/libs/paloSantoDB.class.php");
+include_once("libs/paloSantoDB.class.php");
 
 /* Clase que implementa campaña (saliente por ahora) de CallCenter (CC) */
 class paloSantoCallsHour

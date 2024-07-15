@@ -21,7 +21,7 @@
  +----------------------------------------------------------------------+
  $Id: new_campaign.php $ */
 
-require_once(__DIR__ . "/libs/paloSantoDB.class.php");
+require_once("libs/paloSantoDB.class.php");
 
 class paloSantoReportsCalls
 {

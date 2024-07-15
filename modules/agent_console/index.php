@@ -20,9 +20,9 @@
   | The Initial Developer of the Original Code is PaloSanto Solutions    |
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
-require_once __DIR__ . "/libs/paloSantoForm.class.php";
-require_once __DIR__ . "/libs/paloSantoTrunk.class.php";
-require_once __DIR__ . "/libs/paloSantoConfig.class.php";
+require_once "libs/paloSantoForm.class.php";
+require_once "libs/paloSantoTrunk.class.php";
+require_once "libs/paloSantoConfig.class.php";
 
 define ('AGENT_CONSOLE_DEBUG_LOG', FALSE);
 
@@ -153,16 +153,17 @@ function manejarLogin($module_name, &$smarty, $sDirLocalPlantillas)
         $sAction = '';
 
     switch ($sAction) {
-        case 'doLogin':
-            $sContenido = manejarLogin_doLogin();
-            break;
-        case 'checkLogin':
-            $sContenido = manejarLogin_checkLogin();
-            break;
-        default:
-            $sContenido = manejarLogin_HTML($module_name, $smarty, $sDirLocalPlantillas);
-            break;
-        }
+    case 'doLogin':
+        $sContenido = manejarLogin_doLogin();
+        break;
+    case 'checkLogin':
+        $sContenido = manejarLogin_checkLogin();
+        break;
+    default:
+        $sContenido = manejarLogin_HTML($module_name, $smarty, $sDirLocalPlantillas);
+        break;
+    }
+
     return $sContenido;
 }
 
@@ -234,7 +235,7 @@ function manejarLogin_HTML($module_name, &$smarty, $sDirLocalPlantillas)
         $idUser = $pACL->getIdUser($_SESSION['issabel_user']);
         if ($idUser !== FALSE) {
         	$tupla = $pACL->getUsers($idUser);
-            if (is_array($tupla) && $tupla !== []) {
+            if (is_array($tupla) && count($tupla) > 0) {
                 $sExtension = $tupla[0][3];
                 if (isset($listaExtensiones[$sExtension]))
                     $smarty->assign('ID_EXTENSION', $sExtension);
@@ -247,7 +248,8 @@ function manejarLogin_HTML($module_name, &$smarty, $sDirLocalPlantillas)
             }
         }
     }
-    return $smarty->fetch("$sDirLocalPlantillas/login_agent.tpl");
+    $sContenido = $smarty->fetch("$sDirLocalPlantillas/login_agent.tpl");
+    return $sContenido;
 }
 
 // Procesar requerimiento AJAX para iniciar el login del agente
@@ -278,11 +280,11 @@ function manejarLogin_doLogin()
     if ($bContinuar) {
         $listaExtensiones = $oPaloConsola->listarExtensiones();
         $listaAgentes = $oPaloConsola->listarAgentes();
-        if (!array_key_exists($sAgente, $listaAgentes)) {
+        if (!in_array($sAgente, array_keys($listaAgentes))) {
             $bContinuar = FALSE;
             $respuesta['status'] = FALSE;
             $respuesta['message'] = _tr('Invalid agent number');
-        } elseif (!array_key_exists($sExtension, $listaExtensiones)) {
+        } elseif (!in_array($sExtension, array_keys($listaExtensiones))) {
             $bContinuar = FALSE;
             $respuesta['status'] = FALSE;
             $respuesta['message'] = _tr('Invalid extension number');
@@ -532,7 +534,7 @@ function manejarSesionActiva_HTML($module_name, &$smarty, $sDirLocalPlantillas, 
     foreach ($listpanels as $panelname) {
         foreach (scandir("modules/$module_name/panels/$panelname/js") as $jslib) {
             if ($jslib != '.' && $jslib != '..') {
-                $listaLibsJS_modulo[] = "<script type='text/javascript' src='modules/$module_name/panels/$panelname/js/$jslib'></script>";
+                array_push($listaLibsJS_modulo, "<script type='text/javascript' src='modules/$module_name/panels/$panelname/js/$jslib'></script>");
             }
         }
     }
@@ -1119,7 +1121,7 @@ function manejarSesionActiva_saveforms($module_name, $smarty, $sDirLocalPlantill
             }
         }
 
-        if ($bExito && $formInfo !== []) {
+        if ($bExito && count($formInfo) > 0) {
             $bExito = $oPaloConsola->guardarDatosFormularios(
                 $_SESSION['callcenter']['ultimo_calltype'],
                 $_SESSION['callcenter']['ultimo_callid'],
@@ -1704,13 +1706,15 @@ function construirRespuesta_agentunlinked()
 
 function construirRespuesta_waitingenter($oPaloConsola, $waitedcallinfo)
 {
-    return array(
+    $registroCambio = array(
         'event'         =>  'waitingenter',
         'urlopentype'   =>  NULL,
         'url'           =>  NULL,
         // Etiquetas a modificar en la interfaz
         //'txt_btn_hold' =>  _tr('End Hold'),
     );
+
+    return $registroCambio;
 }
 
 function construirRespuesta_waitingexit()

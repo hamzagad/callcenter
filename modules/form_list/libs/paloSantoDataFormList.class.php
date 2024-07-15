@@ -58,7 +58,7 @@ class paloSantoDataFormList
             $where[] = 'estatus = ?';
             break;
         }
-        $cond = ($where !== []) ? ' WHERE '.implode(' AND ', $where) : '';
+        $cond = (count($where) > 0) ? ' WHERE '.implode(' AND ', $where) : '';
         
         return array($cond, $param);
     }

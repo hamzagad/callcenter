@@ -21,7 +21,7 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-include_once(__DIR__ . "/libs/paloSantoDB.class.php");
+include_once("libs/paloSantoDB.class.php");
 
 /* Clase que implementa breaks */
 class PaloSantoBreaks
@@ -151,7 +151,7 @@ class PaloSantoBreaks
             $recordset =& $this->_DB->fetchTable(
                 'SELECT * FROM break WHERE name = ?', FALSE, 
                 array($sNombre));
-            if (is_array($recordset) && $recordset !== []) 
+            if (is_array($recordset) && count($recordset) > 0) 
                 $this->errMsg = _tr("Name Break already exists");
             else {
                 // Construir y ejecutar la orden de inserción SQL
@@ -181,7 +181,7 @@ class PaloSantoBreaks
         $sNombre = trim("$sNombre");
         if ($sNombre == '') {
             $this->errMsg = _tr("Name Break can't be empty");
-        } elseif (!preg_match('/^\d+$/', $idBreak)) {
+        } else if (!preg_match('/^\d+$/', $idBreak)) {
             $this->errMsg = _tr("Id Break is empty");
         } else {
             // Construir y ejecutar la orden de update SQL
@@ -209,7 +209,7 @@ class PaloSantoBreaks
         $result = FALSE;
         if (!in_array($activate, array('A', 'I'))) {
             $this->errMsg = _tr('Invalid status');
-        } elseif (!preg_match('/^\d+$/', $idBreak)) {
+        } else if (!preg_match('/^\d+$/', $idBreak)) {
             $this->errMsg = _tr("Id Break is empty");
         } else {
             // Construir y ejecutar la orden de update SQL

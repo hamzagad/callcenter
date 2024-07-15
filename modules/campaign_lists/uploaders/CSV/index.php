@@ -119,13 +119,13 @@ class Uploader_CSV
         while ($tupla = fgetcsv($hArchivo, 8192, ',')) {
             $iNumLinea++;
             if (function_exists('mb_convert_encoding')) {
-                foreach (array_keys($tupla) as $k)
+                foreach ($tupla as $k => $v)
                     $tupla[$k] = mb_convert_encoding($tupla[$k], 'UTF-8', $sEncoding);
             }
             $tupla[0] = trim($tupla[0]);
             if (count($tupla) == 1 && trim($tupla[0]) == '') {
                 // Línea vacía
-            } elseif (strlen($tupla[0]) > 0 && $tupla[0][0] == '#') {
+            } elseif (strlen($tupla[0]) > 0 && $tupla[0]{0} == '#') {
                 // Línea que empieza por numeral
             } elseif (!preg_match('/^([\d#\*])+$/', $tupla[0])) {
                 if ($iNumLinea == 1) {
@@ -144,8 +144,8 @@ class Uploader_CSV
                 // Como efecto colateral, $tupla pierde su primer elemento
                 $numero = array_shift($tupla);
                 $atributos = array();
-                foreach ($tupla as $i => $singleTupla) {
-                    $atributos[($i < count($clavesColumnas) && $clavesColumnas[$i] != '') ? $clavesColumnas[$i] : ($i + 1)] = $singleTupla;
+                for ($i = 0; $i < count($tupla); $i++) {
+                    $atributos[($i < count($clavesColumnas) && $clavesColumnas[$i] != '') ? $clavesColumnas[$i] : ($i + 1)] = $tupla[$i];
                 }
                 $idCall = $inserter->insertOneContact($numero, $atributos);
                 if (is_null($idCall)) {
@@ -184,7 +184,8 @@ class Uploader_CSV
                 else $listaPosterior[$sEnc] = _tr($sEnc);
             }
         }
-        return array_merge($listaEncodings, $listaPosterior);
+        $listaEncodings = array_merge($listaEncodings, $listaPosterior);
+        return $listaEncodings;
     }
 
     // Función que intenta adivinar la codificación de caracteres del archivo
@@ -210,6 +211,7 @@ class Uploader_CSV
         if (!$hArchivo) return 'UTF-8';
         for ($i = 0; $i < 20 && !feof($hArchivo); $i++) $sContenido .= fgets($hArchivo);
         fclose($hArchivo);
-        return mb_detect_encoding($sContenido, $listaEncodings);
+        $sEncoding = mb_detect_encoding($sContenido, $listaEncodings);
+        return $sEncoding;
     }
 }

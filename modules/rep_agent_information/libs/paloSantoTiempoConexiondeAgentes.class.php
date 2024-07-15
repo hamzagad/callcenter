@@ -141,7 +141,7 @@ SQL_REPORTE_BREAKS;
     function obtener_agente(){
         $sql = "select number from agent limit 1";
         $result=$this->_DB->getFirstRowQuery($sql, true);
-        if(is_array($result) && $result !== [])
+        if(is_array($result) && count($result)>0)
             return $result['number'];
         else
             return;

@@ -21,10 +21,10 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-require_once __DIR__ . "/libs/paloSantoForm.class.php";
-require_once __DIR__ . "/libs/misc.lib.php";
-require_once __DIR__ . "/libs/paloSantoConfig.class.php";
-require_once __DIR__ . "/libs/paloSantoGrid.class.php";
+require_once "libs/paloSantoForm.class.php";
+require_once "libs/misc.lib.php";
+require_once "libs/paloSantoConfig.class.php";
+require_once "libs/paloSantoGrid.class.php";
 
 if (!function_exists('_tr')) {
     function _tr($s)
@@ -81,11 +81,12 @@ function _moduleContent(&$smarty, $module_name)
     $sAction = 'list_campaign';
     if (isset($_GET['action'])) $sAction = $_GET['action'];
     switch ($sAction) {
-        case 'list_histogram':
-        default:
-            $contenidoModulo = listHistogram($pDB, $smarty, $module_name, $local_templates_dir);
+    case 'list_histogram':
+    default:
+        $contenidoModulo = listHistogram($pDB, $smarty, $module_name, $local_templates_dir);
         break;
     }
+
     return $contenidoModulo;
 }
 
@@ -103,7 +104,7 @@ function listHistogram($pDB, $smarty, $module_name, $local_templates_dir)
     $sTipoLlamada = 'E';
     if (isset($_GET['tipo'])) $sTipoLlamada = $_GET['tipo'];
     if (isset($_POST['tipo'])) $sTipoLlamada = $_POST['tipo'];
-    if (!array_key_exists($sTipoLlamada, $comboTipos)) $sTipoLlamada = 'E';
+    if (!in_array($sTipoLlamada, array_keys($comboTipos))) $sTipoLlamada = 'E';
     $_POST['tipo'] = $sTipoLlamada; // Para llenar el formulario
     $smarty->assign('TIPO', $_POST['tipo']);
     
@@ -117,7 +118,7 @@ function listHistogram($pDB, $smarty, $module_name, $local_templates_dir)
     $sEstadoLlamada = 'T';
     if (isset($_GET['estado'])) $sEstadoLlamada = $_GET['estado'];
     if (isset($_POST['estado'])) $sEstadoLlamada = $_POST['estado'];
-    if (!array_key_exists($sEstadoLlamada, $comboEstados)) $sEstadoLlamada = 'E';
+    if (!in_array($sEstadoLlamada, array_keys($comboEstados))) $sEstadoLlamada = 'E';
     $_POST['estado'] = $sEstadoLlamada; // Para llenar el formulario
     $smarty->assign('ESTADO', $_POST['estado']);
     
@@ -149,7 +150,7 @@ function listHistogram($pDB, $smarty, $module_name, $local_templates_dir)
     $comboColas = array(
         ''  =>  _tr('All'),
     );
-    if ($listaColas !== []) 
+    if (count($listaColas) > 0) 
         $comboColas += array_combine($listaColas, $listaColas);
     $sColaElegida = NULL;
     if (isset($_GET['queue'])) $sColaElegida = $_GET['queue'];
@@ -234,8 +235,9 @@ function listHistogram($pDB, $smarty, $module_name, $local_templates_dir)
                 (isset( $_GET['exportpdf'] ) && $_GET['exportpdf'] == 'yes')
               ) ;
         $sContenido = $oGrid->fetchGrid($arrGrid, $arrData, $arrLang);
-        if (!$bExportando && !str_contains($sContenido, '<form')) {
-            $sContenido = "<form  method=\"POST\" style=\"margin-bottom:0;\" action=\"$url\">$sContenido</form>";
+        if (!$bExportando) {
+            if (strpos($sContenido, '<form') === FALSE)
+                $sContenido = "<form  method=\"POST\" style=\"margin-bottom:0;\" action=\"$url\">$sContenido</form>";
         }
         return $sContenido;
     }
@@ -243,7 +245,7 @@ function listHistogram($pDB, $smarty, $module_name, $local_templates_dir)
 
 function getFormFilter($arrDataTipo, $arrDataEstado, $arrDataQueues)
 {
-    return array(
+    $formCampos = array(
         "fecha_ini"       => array(
             "LABEL"                  => _tr("Date Init"),
             "REQUIRED"               => "yes",
@@ -285,6 +287,8 @@ function getFormFilter($arrDataTipo, $arrDataEstado, $arrDataQueues)
             "VALIDATION_EXTRA_PARAM" => ""
         ),
     );
+
+    return $formCampos;
 }
 
 ?>
