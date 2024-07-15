@@ -21,15 +21,15 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-include_once("libs/paloSantoDB.class.php");
+include_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 /* Clase que implementa campaña (saliente por ahora) de CallCenter (CC) */
 class paloSantoCallsHour
 {
-    var $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $_DB; // instancia de la clase paloDB
+    public $errMsg;
 
-    function paloSantoCallsHour(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {

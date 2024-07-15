@@ -44,7 +44,7 @@ class ListaLlamadas implements IteratorAggregate
     	$this->_tuberia = $tuberia;
         $this->_log = $log;
     }
-
+    
     function numLlamadas() { return count($this->_llamadas); }
 
     function nuevaLlamada($tipo_llamada)

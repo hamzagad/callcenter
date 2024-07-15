@@ -21,15 +21,15 @@
   +----------------------------------------------------------------------+
   $Id: paloSantoCampaignCC.class.php,v 1.2 2008/06/06 07:15:07 cbarcos Exp $ */
 
-include_once("libs/paloSantoDB.class.php");
+include_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 
 class paloSantoIncomingCampaign
 {
-    var $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $_DB; // instancia de la clase paloDB
+    public $errMsg;
 
-    function paloSantoIncomingCampaign(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {
@@ -82,7 +82,7 @@ class paloSantoIncomingCampaign
             return NULL;
         }
         $tupla = $this->_DB->getFirstRowQuery(
-            'SELECT COUNT(*) AS N FROM campaign_entry'.((count($listaWhere) > 0) ? ' WHERE '.implode(' AND ', $listaWhere) : ''),
+            'SELECT COUNT(*) AS N FROM campaign_entry'.(($listaWhere !== []) ? ' WHERE '.implode(' AND ', $listaWhere) : ''),
             TRUE, $paramSQL);
         if (!is_array($tupla)) {
             $this->errMsg = $this->_DB->errMsg;
@@ -133,7 +133,8 @@ WHERE $sWhere GROUP BY ce.id ORDER BY ce.datetime_init, ce.daytime_init
 SQL_CAMPANIAS;
         if (!is_null($limit)) {
             $sPeticionSQL .= ' LIMIT ? OFFSET ?';
-            array_push($paramSQL, $limit, $offset);
+            $paramSQL[] = $limit;
+            $paramSQL[] = $offset;
         }
 
         $recordset =& $this->_DB->fetchTable($sPeticionSQL, true, $paramSQL);
@@ -521,10 +522,10 @@ SQL_LLAMADAS;
             $this->errMsg = 'Unable to read campaign phone data - '.$this->_DB->errMsg;
             return $datosCampania;
         }
-        for ($i = 0; $i < count($datosTelefonos); $i++) {
-        	if ($datosTelefonos[$i][2] == 'terminada')
-                $datosTelefonos[$i][2] = 'Success';
-            if ($datosTelefonos[$i][2] == 'abandonada')
+        foreach ($datosTelefonos as $i => $datosTelefono) {
+            if ($datosTelefono[2] == 'terminada')
+                   $datosTelefonos[$i][2] = 'Success';
+            if ($datosTelefono[2] == 'abandonada')
                 $datosTelefonos[$i][2] = 'Abandoned';
         }
         $datosCampania = array(
@@ -571,7 +572,8 @@ SQL_ATRIBUTOS;
         $datosCampania['BASE']['LABEL'][$iOffsetAttr + 0] = 'Cedula/RUC';
         $datosCampania['BASE']['LABEL'][$iOffsetAttr + 1] = _tr('First Name');
         $datosCampania['BASE']['LABEL'][$iOffsetAttr + 2] = _tr('Last Name');
-        for ($i = 0; $i < count($datosCampania['BASE']['DATA']); $i++) {
+        $itemsCount = count($datosCampania['BASE']['DATA']);
+        for ($i = 0; $i < $itemsCount; $i++) {
         	// Relleno para llamadas sin contacto
             $datosCampania['BASE']['DATA'][$i][$iOffsetAttr + 0] = NULL;
             $datosCampania['BASE']['DATA'][$i][$iOffsetAttr + 1] = NULL;

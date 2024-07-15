@@ -21,16 +21,16 @@
   +----------------------------------------------------------------------+
   $Id: index.php,v 1.1.1.1 2009/07/27 09:10:19 dlopez Exp $ */
 
-require_once 'libs/paloSantoGrid.class.php';
+require_once __DIR__ . '/libs/paloSantoGrid.class.php';
 
 function _moduleContent(&$smarty, $module_name)
 {
     global $arrConf;
     global $arrLang;
 
-    require_once "modules/agent_console/libs/issabel2.lib.php";
-    require_once "modules/agent_console/libs/paloSantoConsola.class.php";
-    require_once "modules/agent_console/libs/JSON.php";
+    require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
+    require_once __DIR__ . "/modules/agent_console/libs/paloSantoConsola.class.php";
+    require_once __DIR__ . "/modules/agent_console/libs/JSON.php";
     require_once "modules/$module_name/configs/default.conf.php";
 
     // Directorio de este módulo
@@ -60,14 +60,14 @@ function _moduleContent(&$smarty, $module_name)
 
     $oPaloConsola = new PaloSantoConsola();
     switch ($sAction) {
-    case 'checkStatus':
-        $sContenido = manejarMonitoreo_checkStatus($module_name, $smarty, $sDirLocalPlantillas, $oPaloConsola);
-        break;
-    case '':
-    default:
-        $sContenido = manejarMonitoreo_HTML($module_name, $smarty, $sDirLocalPlantillas, $oPaloConsola);
-        break;
-    }
+        case 'checkStatus':
+            $sContenido = manejarMonitoreo_checkStatus($module_name, $smarty, $sDirLocalPlantillas, $oPaloConsola);
+            break;
+        case '':
+        default:
+            $sContenido = manejarMonitoreo_HTML($module_name, $smarty, $sDirLocalPlantillas, $oPaloConsola);
+            break;
+    }    
     $oPaloConsola->desconectarTodo();
 
     return $sContenido;
@@ -393,15 +393,13 @@ function manejarMonitoreo_checkStatus($module_name, $smarty, $sDirLocalPlantilla
     ksort($estadoMonitor);
     $jsonData = construirDatosJSON($estadoMonitor);
     foreach ($jsonData as $jsonKey => $jsonRow) {
-    	if (isset($estadoCliente[$jsonKey])) {
-    		if ($estadoCliente[$jsonKey]['status'] != $jsonRow['status'] ||
-                $estadoCliente[$jsonKey]['oncallupdate'] != $jsonRow['oncallupdate']) {
-                $respuesta[$jsonKey] = $jsonRow;
-                $estadoCliente[$jsonKey]['status'] = $jsonRow['status'];
-                $estadoCliente[$jsonKey]['oncallupdate'] = $jsonRow['oncallupdate'];
-                unset($respuesta[$jsonKey]['agentname']);
-            }
-    	}
+    	if (isset($estadoCliente[$jsonKey]) && ($estadoCliente[$jsonKey]['status'] != $jsonRow['status'] ||
+               $estadoCliente[$jsonKey]['oncallupdate'] != $jsonRow['oncallupdate'])) {
+         $respuesta[$jsonKey] = $jsonRow;
+         $estadoCliente[$jsonKey]['status'] = $jsonRow['status'];
+         $estadoCliente[$jsonKey]['oncallupdate'] = $jsonRow['oncallupdate'];
+         unset($respuesta[$jsonKey]['agentname']);
+     }
     }
 
     $iTimeoutPoll = $oPaloConsola->recomendarIntervaloEsperaAjax();
@@ -708,7 +706,7 @@ function manejarMonitoreo_checkStatus($module_name, $smarty, $sDirLocalPlantilla
 
 
         }
-        if (count($respuesta) > 0) {
+        if ($respuesta !== []) {
             @session_start();
             $estadoHash = generarEstadoHash($module_name, $estadoCliente);
             $respuesta['estadoClienteHash'] = $estadoHash;

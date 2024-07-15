@@ -21,14 +21,14 @@
  +----------------------------------------------------------------------+
  $Id: new_campaign.php $ */
 
-require_once("libs/paloSantoDB.class.php");
+require_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 class paloSantoReportsCalls
 {
-    var $_DB;
-    var $errMsg = '';
+    public $_DB;
+    public $errMsg = '';
 
-    function paloSantoReportsCalls(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {

@@ -185,7 +185,7 @@ class ConfigDB
     private $_fuenteCredAst = ASTCONN_CRED_DESCONOCIDO;
 
 	// Constructor del objeto de configuración
-    function ConfigDB(&$dbConn, &$log)
+    function __construct(&$dbConn, &$log)
     {
         $this->_dbConn = $dbConn;
         $this->_log = $log;
@@ -297,12 +297,10 @@ class ConfigDB
         $infoConfig = $this->parse_ini_file_literal($sNombreArchivo);
         if (is_array($infoConfig)) {
             foreach ($infoConfig as $login => $infoLogin) {
-            	if ($login != 'general') {
-            		if (isset($infoLogin['secret']) && 
-            			isset($infoLogin['read']) && 
-            			isset($infoLogin['write'])) {
-            			return array($login, $infoLogin['secret']);
-            		}
+            	if ($login != 'general' && (isset($infoLogin['secret']) && 
+           			isset($infoLogin['read']) && 
+           			isset($infoLogin['write']))) {
+            		return array($login, $infoLogin['secret']);
             	}
             }
         } else {

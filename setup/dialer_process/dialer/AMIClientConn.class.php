@@ -187,7 +187,7 @@ class AMIClientConn extends MultiplexConn
             array('ActionID' => FALSE),
     );
 
-    function AMIClientConn($dialSrv, $oMainLog)
+    function __construct($dialSrv, $oMainLog)
     {
         $this->oLogger = $oMainLog;
         $this->multiplexSrv = $dialSrv;
@@ -275,9 +275,8 @@ class AMIClientConn extends MultiplexConn
                         $sClave = $sValor = NULL;
                         $bProcesando_END_COMMAND = TRUE;
                     }
-                } else {
-                    if ($bEsperando_END_COMMAND)
-                        $bProcesando_END_COMMAND = TRUE;
+                } elseif ($bEsperando_END_COMMAND) {
+                    $bProcesando_END_COMMAND = TRUE;
                 }
 
                 if ($bProcesando_END_COMMAND) {
@@ -296,7 +295,7 @@ class AMIClientConn extends MultiplexConn
                     $p1 = $p2;
                 } elseif ($s == '') {
                     // Se ha encontrado el final de un paquete
-                    if (count($paquete)) $listaPaquetes[] = $paquete;
+                    if ($paquete !== []) $listaPaquetes[] = $paquete;
                     $p1 = $p2;
                     $p_paquetes = $p1;
                     $paquete = array();
@@ -432,7 +431,7 @@ class AMIClientConn extends MultiplexConn
         if (!is_null($cast)) switch ($cast) {
         case 'bool':
             if (!in_array($v, array('true', 'false')))
-                $v = $v ? TRUE : FALSE;
+                $v = (bool) $v;
             break;
         case 'int':
             $v = (int)$v;
@@ -467,7 +466,9 @@ class AMIClientConn extends MultiplexConn
     public function __call($name, $args)
     {
         $async = FALSE;
-        $callback = array($this, '_emulate_sync_response');
+        $callback = function ($paquete) {
+            return $this->_emulate_sync_response($paquete);
+        };
         $callback_params = array();
         if (strlen($name) > 5 && substr($name, 0, 5) == 'async') {
             $callback = array_shift($args);
@@ -523,7 +524,7 @@ class AMIClientConn extends MultiplexConn
         if (!$async) $this->_sync_wait++;
         if ($async) {
             // Poner la petición asíncrona al final de la cola
-            array_push($this->_queue_requests, $request_info);
+            $this->_queue_requests[] = $request_info;
         } else {
             // Poner la petición síncrona como primera de las NO enviadas
             $head_req = NULL;
@@ -658,9 +659,8 @@ class AMIClientConn extends MultiplexConn
             }
 
             $callback_info = array_shift($this->_queue_requests);
-            if (!is_null($callback_info[0])) {
-                if (!is_null($this->oLogger))
-                    $this->oLogger->output('ERR: '.__METHOD__.' petición head NO ha sido enviada: '.$callback_info[0]);
+            if (!is_null($callback_info[0]) && !is_null($this->oLogger)) {
+                $this->oLogger->output('ERR: '.__METHOD__.' petición head NO ha sido enviada: '.$callback_info[0]);
             }
             $handler = $callback_info[1];
             $handler_params = $callback_info[2];
@@ -753,9 +753,9 @@ class AMIClientConn extends MultiplexConn
         }
 
         $lineas = explode("\r\n", $r["data"]);
-        while (count($lineas) > 0) {
+        while ($lineas !== []) {
             if (substr($lineas[0],0,6) == "Value:") {
-                return trim(substr(join("\r\n", $lineas),6));
+                return trim(substr(implode("\r\n", $lineas),6));
             }
             array_shift($lineas);
         }

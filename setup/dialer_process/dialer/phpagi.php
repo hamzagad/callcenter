@@ -67,7 +67,8 @@
   */
   class AGI
   {
-   /**
+   public $asm;
+    /**
     * Request variables read in on initialization.
     *
     * Often contains any/all of the following:
@@ -92,7 +93,7 @@
     * @var array
     * @access public
     */
-    var $request;
+    public $request;
 
    /**
     * Config variables
@@ -100,7 +101,7 @@
     * @var array
     * @access public
     */
-    var $config;
+    public $config;
 
    /**
     * Asterisk Manager
@@ -108,35 +109,35 @@
     * @var AGI_AsteriskManager
     * @access public
     */
-    var $asmanager;
+    public $asmanager;
 
    /**
     * Input Stream
     *
     * @access private
     */
-    var $in = NULL;
+    public $in = NULL;
 
    /**
     * Output Stream
     *
     * @access private
     */
-    var $out = NULL;
+    public $out = NULL;
 
    /**
     * FastAGI socket
     *
     * @access private
     */
-    var $socket = NULL;
+    public $socket = NULL;
 
    /**
     * Audio Stream
     *
     * @access public
     */
-    var $audio = NULL;
+    public $audio = NULL;
 
    /**
     * Constructor
@@ -144,7 +145,7 @@
     * @param string $config is the name of the config file to parse
     * @param array $optconfig is an array of configuration vars and vals, stuffed into $this->config['phpagi']
     */
-    function AGI($config=NULL, $optconfig=array(), $socket=NULL)
+    function __construct($config=NULL, $optconfig=array(), $socket=NULL)
     {
       // load config
       if(!is_null($config) && file_exists($config))
@@ -322,17 +323,16 @@
     }
 
    /**
-    * Executes the specified Asterisk application with given options.
-    *
-    * @link http://www.voip-info.org/wiki-exec
-    * @link http://www.voip-info.org/wiki-Asterisk+-+documentation+of+application+commands
-    * @param string $application
-    * @param mixed $options
-    * @return array, see evaluate for return information. ['result'] is whatever the application returns, or -2 on failure to find application
-    */
+     * Executes the specified Asterisk application with given options.
+     *
+     * @link http://www.voip-info.org/wiki-exec
+     * @link http://www.voip-info.org/wiki-Asterisk+-+documentation+of+application+commands
+     * @param string $application
+     * @return array, see evaluate for return information. ['result'] is whatever the application returns, or -2 on failure to find application
+     */
     function exec($application, $options)
     {
-      if(is_array($options)) $options = join('|', $options);
+      if(is_array($options)) $options = implode('|', $options);
       return $this->evaluate("EXEC $application $options");
     }
 
@@ -864,10 +864,9 @@
    function fastpass_say_digits(&$buffer, $digits, $escape_digits='')
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -876,7 +875,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}));
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]));
    }
 
    /**
@@ -893,10 +892,9 @@
    function fastpass_say_number(&$buffer, $number, $escape_digits='')
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -905,7 +903,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}));
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]));
    }
 
    /**
@@ -922,10 +920,9 @@
    function fastpass_say_phonetic(&$buffer, $text, $escape_digits='')
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -934,7 +931,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}));
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]));
    }
 
    /**
@@ -951,10 +948,9 @@
    function fastpass_say_time(&$buffer, $time=NULL, $escape_digits='')
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -963,7 +959,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}));
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]));
    }
 
    /**
@@ -983,10 +979,9 @@
    function fastpass_stream_file(&$buffer, $filename, $escape_digits='', $offset=0)
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -995,7 +990,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}), 'endpos'=>0);
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]), 'endpos'=>0);
    }
 
    /**
@@ -1012,10 +1007,9 @@
    function fastpass_text2wav(&$buffer, $text, $escape_digits='', $frequency=8000)
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -1024,7 +1018,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}), 'endpos'=>0);
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]), 'endpos'=>0);
    }
 
    /**
@@ -1041,10 +1035,9 @@
    function fastpass_swift(&$buffer, $text, $escape_digits='', $frequency=8000, $voice=NULL)
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -1053,7 +1046,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}), 'endpos'=>0);
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]), 'endpos'=>0);
    }
 
    /**
@@ -1069,10 +1062,9 @@
    function fastpass_say_punctuation(&$buffer, $text, $escape_digits='', $frequency=8000)
    {
      $proceed = false;
-     if($escape_digits != '' && $buffer != '')
+     if($escape_digits != '' && $buffer != '' && !strpos(chr(255) . $escape_digits, $buffer[strlen($buffer)-1]))
      {
-       if(!strpos(chr(255) . $escape_digits, $buffer{strlen($buffer)-1}))
-         $proceed = true;
+       $proceed = true;
      }
      if($buffer == '' || $proceed)
      {
@@ -1081,7 +1073,7 @@
          $buffer .= chr($res['result']);
        return $res;
      }
-     return array('code'=>AGIRES_OK, 'result'=>ord($buffer{strlen($buffer)-1}));
+     return array('code'=>AGIRES_OK, 'result'=>ord($buffer[strlen($buffer)-1]));
    }
 
    /**
@@ -1163,16 +1155,13 @@
     */
     function menu($choices, $timeout=2000)
     {
-      $keys = join('', array_keys($choices));
+      $keys = implode('', array_keys($choices));
       $choice = NULL;
       while(is_null($choice))
       {
         foreach($choices as $prompt)
         {
-          if($prompt{0} == '*')
-            $ret = $this->text2wav(substr($prompt, 1), $keys);
-          else
-            $ret = $this->stream_file($prompt, $keys);
+          $ret = $prompt[0] == '*' ? $this->text2wav(substr($prompt, 1), $keys) : $this->stream_file($prompt, $keys);
 
           if($ret['code'] != AGIRES_OK || $ret['result'] == -1)
           {
@@ -1232,12 +1221,12 @@
       $ret = array('name'=>'', 'protocol'=>'', 'username'=>'', 'host'=>'', 'port'=>'');
       $callerid = trim($callerid);
 
-      if($callerid{0} == '"' || $callerid{0} == "'")
+      if($callerid[0] == '"' || $callerid[0] == "'")
       {
-        $d = $callerid{0};
+        $d = $callerid[0];
         $callerid = explode($d, substr($callerid, 1));
         $ret['name'] = array_shift($callerid);
-        $callerid = join($d, $callerid);
+        $callerid = implode($d, $callerid);
       }
 
       $callerid = explode('@', trim($callerid, '<> '));
@@ -1247,17 +1236,17 @@
       else
       {
         $ret['protocol'] = array_shift($username);
-        $ret['username'] = join(':', $username);
+        $ret['username'] = implode(':', $username);
       }
 
-      $callerid = join('@', $callerid);
+      $callerid = implode('@', $callerid);
       $host = explode(':', $callerid);
       if(count($host) == 1)
         $ret['host'] =  $host[0];
       else
       {
         $ret['host'] = array_shift($host);
-        $ret['port'] = join(':', $host);
+        $ret['port'] = implode(':', $host);
       }
 
       return $ret;
@@ -1295,7 +1284,7 @@
         if(!file_exists("$fname.txt"))
         {
           $fp = fopen("$fname.txt", 'w');
-          fputs($fp, $text);
+          fwrite($fp, $text);
           fclose($fp);
         }
 
@@ -1352,7 +1341,7 @@
         if(!file_exists("$fname.txt"))
         {
           $fp = fopen("$fname.txt", 'w');
-          fputs($fp, $text);
+          fwrite($fp, $text);
           fclose($fp);
         }
 
@@ -1416,14 +1405,14 @@
         {
           if($command)
           {
-            switch($code{0})
+            switch($code[0])
             {
               case '2': $text = substr($text, 0, strlen($text) - 1); break; // backspace
               case '5': $mode = 'LOWERCASE'; break;
               case '6': $mode = 'NUMERIC'; break;
               case '7': $mode = 'SYMBOL'; break;
               case '8': $mode = 'UPPERCASE'; break;
-              case '9': $text = explode(' ', $text); unset($text[count($text)-1]); $text = join(' ', $text); break; // backspace a word
+              case '9': $text = explode(' ', $text); unset($text[count($text)-1]); $text = implode(' ', $text); break; // backspace a word
             }
             $code = substr($code, 1);
             $command = false;
@@ -1454,9 +1443,10 @@
     */
     function say_punctuation($text, $escape_digits='', $frequency=8000)
     {
+      $ret ="";
       for($i = 0; $i < strlen($text); $i++)
       {
-        switch($text{$i})
+        switch($text[$i])
         {
           case ' ': $ret .= 'SPACE ';
           case ',': $ret .= 'COMMA '; break;
@@ -1491,7 +1481,7 @@
           case '|': $ret .= 'BAR '; break;
           case '_': $ret .= 'UNDERSCORE '; break;
           case '~': $ret .= 'TILDE '; break;
-          default: $ret .= $text{$i} . ' '; break;
+          default: $ret .= $text[$i] . ' '; break;
         }
       }
       return $this->text2wav($ret, $escape_digits, $frequency);
@@ -1553,13 +1543,13 @@
       $ret['code'] = substr($str, 0, 3);
       $str = trim(substr($str, 3));
 
-      if($str{0} == '-') // we have a multiline response!
+      if($str[0] == '-') // we have a multiline response!
       {
         $count = 0;
         $str = substr($str, 1) . "\n";
 
         $line = is_null($this->socket) ? @fgets($this->in, 4096) : @socket_read($this->socket, 4096, PHP_NORMAL_READ);
-        while(substr($line, 0, 3) != $ret['code'] && $count < 5)
+        while(substr($line, 0, 3) !== $ret['code'] && $count < 5)
         {
           $str .= $line;
           $line = is_null($this->socket) ? @fgets($this->in, 4096) : @socket_read($this->socket, 4096, PHP_NORMAL_READ);
@@ -1588,14 +1578,14 @@
           if($in_token) // we previously hit a token starting with '(' but not ending in ')'
           {
 	    $tmp = trim($token);
-	    $tmp = $tmp{0} == '(' ? substr($tmp,1):$tmp;
+	    $tmp = $tmp[0] == '(' ? substr($tmp,1):$tmp;
 	    $tmp = substr($tmp,-1) == ')' ? substr($tmp,0,strlen($tmp)-1):$tmp;
 	    $ret['data'] .= ' ' . trim($tmp);
-            if($token{strlen($token)-1} == ')') $in_token = false;
+            if($token[strlen($token)-1] == ')') $in_token = false;
           }
-          elseif($token{0} == '(')
+          elseif($token[0] == '(')
           {
-            if($token{strlen($token)-1} != ')') $in_token = true;
+            if($token[strlen($token)-1] != ')') $in_token = true;
 	    $tmp = trim(substr($token,1));
 	    $tmp = $in_token ? $tmp : substr($tmp,0,strlen($tmp)-1);
 	    $ret['data'] .= ' ' . trim($tmp);
@@ -1630,14 +1620,11 @@
     {
       static $busy = false;
 
-      if($this->config['phpagi']['debug'] != false)
-      {
-        if(!$busy) // no conlogs inside conlog!!!
-        {
+      if ($this->config['phpagi']['debug'] != false && !$busy) {
+          // no conlogs inside conlog!!!
           $busy = true;
           $this->verbose($str, $vbl);
           $busy = false;
-        }
       }
     }
 
@@ -1658,11 +1645,10 @@
         if(!function_exists('is_executable') || is_executable($path . DIRECTORY_SEPERATOR . $cmd))
           return $path . DIRECTORY_SEPERATOR . $cmd;
 
-      if(is_null($checkpath))
+      if(is_null($checkpath) && substr(strtoupper(PHP_OS)) != 'WIN')
       {
-        if(substr(strtoupper(PHP_OS, 0, 3)) != 'WIN')
-          return $this->which($cmd, '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:'.
-                                    '/usr/X11R6/bin:/usr/local/apache/bin:/usr/local/mysql/bin');
+        return $this->which($cmd, '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:'.
+                                  '/usr/X11R6/bin:/usr/local/apache/bin:/usr/local/mysql/bin');
       }
       return false;
     }
@@ -1678,12 +1664,11 @@
     {
       $f = explode(DIRECTORY_SEPARATOR, $folder);
       $base = '';
-      for($i = 0; $i < count($f); $i++)
-      {
-        $base .= $f[$i];
-        if($f[$i] != '' && !file_exists($base))
-          mkdir($base, $perms);
-        $base .= DIRECTORY_SEPARATOR;
+      foreach ($f as $i => $singleF) {
+          $base .= $singleF;
+          if($singleF != '' && !file_exists($base))
+            mkdir($base, $perms);
+          $base .= DIRECTORY_SEPARATOR;
       }
     }	
   }
@@ -1729,6 +1714,8 @@
 
       if(function_exists('mysql_errno') && strpos(' '.strtolower($message), 'mysql'))
         $message .= 'MySQL error ' . mysql_errno() . ": " . mysql_error() . "\n\n";
+      if(strpos(' '.strtolower($message), 'mysqli'))
+        $message .= 'MySQLi error ' . $mysqli->error . "\n\n";
 
       // figure out who we are
       if(function_exists('socket_create'))
@@ -1752,7 +1739,8 @@
       {
         $message .= "\n\n$file:\n";
         $code = @file($file);
-        for($i = max(0, $line - 10); $i < min($line + 10, count($code)); $i++)
+        $codeCount = count($code);
+        for($i = max(0, $line - 10); $i < min($line + 10, $codeCount); $i++)
           $message .= ($i + 1)."\t$code[$i]";
       }
 
@@ -1760,15 +1748,15 @@
       $ret = '';
       for($i = 0; $i < strlen($message); $i++)
       {
-        $c = ord($message{$i});
+        $c = ord($message[$i]);
         if($c == 10 || $c == 13 || $c == 9)
-          $ret .= $message{$i};
+          $ret .= $message[$i];
         elseif($c < 16)
           $ret .= '\x0' . dechex($c);
         elseif($c < 32 || $c > 127)
           $ret .= '\x' . dechex($c);
         else
-          $ret .= $message{$i};
+          $ret .= $message[$i];
       }
       $message = $ret;
 

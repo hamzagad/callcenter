@@ -20,7 +20,7 @@
  | The Initial Developer of the Original Code is PaloSanto Solutions    |
  +----------------------------------------------------------------------+
  $Id: DialerProcess.class.php,v 1.48 2009/03/26 13:46:58 alex Exp $ */
-require_once 'ECCPHelper.lib.php';
+require_once __DIR__ . '/ECCPHelper.lib.php';
 
 class SQLWorkerProcess extends TuberiaProcess
 {
@@ -311,7 +311,7 @@ class SQLWorkerProcess extends TuberiaProcess
                             $k, $this->_configDB->$k);
                     }
 
-                    if (in_array($k, array('dialer_debug'))) {
+                    if ($k == 'dialer_debug') {
                         $this->_tuberia->msg_ECCPProcess_actualizarConfig(
                             $k, $this->_configDB->$k);
                     }
@@ -347,10 +347,10 @@ class SQLWorkerProcess extends TuberiaProcess
 
     private function _encolarAccionPendiente($method, $params)
     {
-        array_push($this->_accionesPendientes, array(
+        $this->_accionesPendientes[] = array(
             array($this, $method),    // callable
             $params,    // params
-        ));
+        );
 
     }
 
@@ -808,7 +808,6 @@ class SQLWorkerProcess extends TuberiaProcess
             $promedio, $desviacion)
     {
         $eventos = array();
-
         $sth = $this->_db->prepare(
             'UPDATE campaign SET num_completadas = ?, promedio = ?, desviacion = ? WHERE id = ?');
         $sth->execute(array($num_completadas, $promedio, $desviacion, $id_campaign));
@@ -819,7 +818,6 @@ class SQLWorkerProcess extends TuberiaProcess
     private function _agregarArchivoGrabacion($tipo_llamada, $id_llamada, $uniqueid, $channel, $recordingfile)
     {
         $eventos = array();
-
         // TODO: configurar prefijo de monitoring
         $sDirBaseMonitor = '/var/spool/asterisk/monitor/';
 
@@ -964,7 +962,7 @@ SQL_EXISTE_AUDIT;
     }
 
     private function _AgentUnlinked($sAgente, $sTipoLlamada, $idCampaign,
-        $idLlamada, $sPhone, $sFechaFin, $iDuracion, $bShortFlag, $paramProgreso)
+    $idLlamada, $sPhone, $sFechaFin, $iDuracion, $bShortFlag, $paramProgreso)
     {
         $eventos = array();
         $eventos_forward = array();

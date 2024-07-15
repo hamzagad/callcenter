@@ -21,10 +21,10 @@
   +----------------------------------------------------------------------+
   $Id: paloSantoReportedeTroncalesusadasporHoraeneldia.class.php,v 1.1.1.1 2009/07/27 09:10:19 dlopez Exp $ */
 class paloSantoReportedeTroncalesusadasporHoraeneldia {
-    var $_DB;
-    var $errMsg;
+    public $_DB;
+    public $errMsg;
 
-    function paloSantoReportedeTroncalesusadasporHoraeneldia(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {

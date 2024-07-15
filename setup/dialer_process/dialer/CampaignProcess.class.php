@@ -222,8 +222,8 @@ class CampaignProcess extends TuberiaProcess
                     // Verificar si se ha cambiado la configuración
                     $this->_verificarCambioConfiguracion();
 
-                    if ($this->_ociosoSinEventos) {
-                        if (!is_null($this->_ami)) $this->_actualizarCampanias();
+                    if ($this->_ociosoSinEventos && !is_null($this->_ami)) {
+                        $this->_actualizarCampanias();
                     }
                 }
 
@@ -247,7 +247,7 @@ class CampaignProcess extends TuberiaProcess
         return TRUE;
     }
 
-    public function limpiezaDemonio($signum)
+    public function limpiezaDemonio($signum = null)
     {
         // Mandar a cerrar todas las conexiones activas
         $this->_multiplex->finalizarServidor();
@@ -508,10 +508,8 @@ PETICION_CAMPANIAS_ENTRANTES;
 
         // Parámetros requeridos para predicción de colocación de llamadas
         $infoCola = $this->_tuberia->AMIEventProcess_infoPrediccionCola($infoCampania['queue']);
-        if (is_null($infoCola)) {
-            if ($oPredictor->examinarColas(array($infoCampania['queue']))) {
-                $infoCola = $oPredictor->infoPrediccionCola($infoCampania['queue']);
-            }
+        if (is_null($infoCola) && $oPredictor->examinarColas(array($infoCampania['queue']))) {
+            $infoCola = $oPredictor->infoPrediccionCola($infoCampania['queue']);
         }
 
         if (is_null($infoCola)) {
@@ -551,7 +549,7 @@ PETICION_CAMPANIAS_ENTRANTES;
 //añadido por hgmnetwork.com 26-06-2018 para forzar mas llamadas por agente
 //miramos si como mínimo hay 1 llamada por hacer que fuerce mas, si es 0 llamadas ignora para no hacer llamadas sin agentes libres o apunto
 if ($iNumLlamadasColocar>0){
-$iNumLlamadasColocar= $iNumLlamadasColocar + $this->_configDB->dialer_forzar_sobrecolocar;
+    $iNumLlamadasColocar= $iNumLlamadasColocar + $this->_configDB->dialer_forzar_sobrecolocar;
 };
  $this->_log->output('DEBUG: '.__METHOD__." (campania {$infoCampania['id']} ".
                 "cola {$infoCampania['queue']}): resumen de predicción:\n".
@@ -968,8 +966,8 @@ PETICION_AGENTES_AGENDADOS;
             $sFechaSys,
             $sHoraFinal,
             $sHoraInicio));
-        $listaAgentes = $recordset->fetchAll(PDO::FETCH_COLUMN, 0);
-        return $listaAgentes;
+            $listaAgentes = $recordset->fetchAll(PDO::FETCH_COLUMN, 0);
+            return $listaAgentes;
     }
 
     /**
@@ -1111,9 +1109,8 @@ PETICION_LLAMADAS_AGENTE;
         /* Para evitar excesivas conexiones, se mantiene un cache de la información leída
          * acerca de un trunk durante los últimos 30 segundos.
          */
-        if (isset($this->_plantillasMarcado[$sTrunk])) {
-            if (time() - $this->_plantillasMarcado[$sTrunk]['TIMESTAMP'] >= 30)
-                unset($this->_plantillasMarcado[$sTrunk]);
+        if (isset($this->_plantillasMarcado[$sTrunk]) && time() - $this->_plantillasMarcado[$sTrunk]['TIMESTAMP'] >= 30) {
+            unset($this->_plantillasMarcado[$sTrunk]);
         }
         if (isset($this->_plantillasMarcado[$sTrunk])) {
             return $this->_plantillasMarcado[$sTrunk]['PROPIEDADES'];
@@ -1151,8 +1148,7 @@ PETICION_LLAMADAS_AGENTE;
                     );
                 }
                 $sPeticionSQL =
-                    'SELECT outcid AS CID, dialoutprefix AS PREFIX '.
-                    'FROM trunks WHERE tech = ? AND channelid = ?';
+                    'SELECT outcid AS CID, dialoutprefix AS PREFIX FROM trunks WHERE tech = ? AND channelid = ?';
                 $recordset = $dbConn->prepare($sPeticionSQL);
                 foreach ($listaIntentos as $tuplaIntento) {
                     $recordset->execute(array($tuplaIntento['tech'], $tuplaIntento['channelid']));
@@ -1256,7 +1252,7 @@ PETICION_LLAMADAS_AGENTE;
             if ($sLinea === FALSE) break;
             $sLinea = trim($sLinea);
             if ($sLinea == '') continue;
-            if ($sLinea{0} == '#') continue;
+            if ($sLinea[0] == '#') continue;
 
             $regs = NULL;
             if (preg_match('/^([[:alpha:]]+)[[:space:]]*=[[:space:]]*(.*)$/', $sLinea, $regs)) switch ($regs[1]) {
@@ -1322,9 +1318,9 @@ PETICION_LLAMADAS_AGENTE;
     {
         $versionMinima = array(1, 6, 0);
         while (count($versionMinima) < count($this->_asteriskVersion))
-            array_push($versionMinima, 0);
+            $versionMinima[] = 0;
         while (count($versionMinima) > count($this->_asteriskVersion))
-            array_push($this->_asteriskVersion, 0);
+            $this->_asteriskVersion[] = 0;
         $sSeparador = ($this->_asteriskVersion >= $versionMinima) ? ',' : '|';
         return implode($sSeparador, $listaVar);
     }

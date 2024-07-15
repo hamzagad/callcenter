@@ -21,14 +21,14 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-include_once("libs/paloSantoDB.class.php");
+include_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 class paloSantoHoldTime
 {
-    var $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $_DB; // instancia de la clase paloDB
+    public $errMsg;
 
-    function paloSantoHoldTime(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {

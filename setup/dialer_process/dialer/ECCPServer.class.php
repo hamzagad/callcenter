@@ -24,7 +24,6 @@
 class ECCPServer extends MultiplexServer
 {
     private $DEBUG = FALSE;
-
     private $_tuberia = NULL;
 
     // Constructor con objeto adicional de tubería

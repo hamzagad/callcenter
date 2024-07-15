@@ -23,23 +23,23 @@
   $Id: index.php,v 1.1 2007/01/09 23:49:36 alex Exp $
 */
 
-require_once "libs/paloSantoGrid.class.php";
-require_once "libs/paloSantoDB.class.php";
-require_once "libs/paloSantoForm.class.php";
-require_once "libs/paloSantoConfig.class.php";
+require_once __DIR__ . "/libs/paloSantoGrid.class.php";
+require_once __DIR__ . "/libs/paloSantoDB.class.php";
+require_once __DIR__ . "/libs/paloSantoForm.class.php";
+require_once __DIR__ . "/libs/paloSantoConfig.class.php";
 
-require_once 'libs/UsuariosECCP.class.php';
+require_once __DIR__ . '/libs/UsuariosECCP.class.php';
 
-require_once "modules/agent_console/libs/issabel2.lib.php";
+require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
 
 if (!function_exists('getParameter')) {
     function getParameter($parameter)
     {
-        if(isset($_POST[$parameter]))
+        if (isset($_POST[$parameter])) {
             return $_POST[$parameter];
-        else if(isset($_GET[$parameter]))
+        } elseif (isset($_GET[$parameter])) {
             return $_GET[$parameter];
-        else
+        } else
             return null;
     }
 }
@@ -62,13 +62,13 @@ function _moduleContent(&$smarty, $module_name)
     $pDB = new paloDB($arrConf['cadena_dsn']);
 
     switch (getParameter('action')) {
-    case 'new_user':
-        return nuevoUsuario($pDB, $smarty, $module_name, $local_templates_dir);
-    case 'edit_user':
-        return editarUsuario($pDB, $smarty, $module_name, $local_templates_dir);
-    case 'list_user':
-    default:
-        return listarUsuarios($pDB, $smarty, $module_name, $local_templates_dir);
+        case 'new_user':
+            return nuevoUsuario($pDB, $smarty, $module_name, $local_templates_dir);
+        case 'edit_user':
+            return editarUsuario($pDB, $smarty, $module_name, $local_templates_dir);
+        case 'list_user':
+        default:
+            return listarUsuarios($pDB, $smarty, $module_name, $local_templates_dir);
     }
 }
 
@@ -232,11 +232,10 @@ function formEditUser($pDB, $smarty, $module_name, $local_templates_dir, $id_use
     }
 
     $smarty->assign('icon', 'images/user.png');
-    $contenidoModulo = $oForm->fetchForm(
+    return $oForm->fetchForm(
         "$local_templates_dir/edit-users.tpl", 
         is_null($id_user) ? _tr('New user') : _tr('Edit user').' "'.$_POST['username'].'"',
         $_POST);
-    return $contenidoModulo;
 }
 
 function getFormUser(&$smarty)
@@ -248,8 +247,7 @@ function getFormUser(&$smarty)
     $smarty->assign("EDIT", _tr('Edit'));
     $smarty->assign("DELETE", _tr('Delete'));
     $smarty->assign("CONFIRM_CONTINUE", _tr('Are you sure you wish to continue?'));
-
-    $arrFormElements = array(
+    return array(
         "username" => array(
             "LABEL"                  => ""._tr('User name')."",
             "EDITABLE"               => "yes",
@@ -275,7 +273,6 @@ function getFormUser(&$smarty)
             "VALIDATION_TYPE"        => "text",
             "VALIDATION_EXTRA_PARAM" => ""),
     );
-    return $arrFormElements;
 }
 
 ?>

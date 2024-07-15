@@ -212,8 +212,7 @@ class AMIEventProcess extends TuberiaProcess
         if (is_null($this->_config)) {
             $this->_log->output('WARN: no se dispone de credenciales para conexión a Asterisk, se piden a SQLWorkerProcess y espera...');
             $this->_tuberia->msg_SQLWorkerProcess_requerir_credencialesAsterisk();
-            $this->_alarma_faltaconfig = $this->_agregarAlarma(3, array($this, '_cb_faltaConfig'), array());
-        }
+            $this->_alarma_faltaconfig = $this->_agregarAlarma(3, array($this, '_cb_faltaConfig'), array());        }
     }
 
     private function _iniciarConexionAMI()
@@ -297,7 +296,7 @@ class AMIEventProcess extends TuberiaProcess
                 'QueueMemberPaused', 'ParkedCall', /*'ParkedCallTimeOut',*/
                 'ParkedCallGiveUp', 'QueueCallerAbandon', 'BridgeCreate', 'BridgeEnter', 'BridgeLeave', 'UserEvent'
             ) as $k)
-                $astman->add_event_handler($k, array($this, "msg_$k"));
+            $astman->add_event_handler($k, array($this, "msg_$k"));
             $astman->add_event_handler('Bridge', array($this, "msg_Link")); // Visto en Asterisk 1.6.2.x
             if ($this->DEBUG && $this->_config['dialer']['allevents'])
                 $astman->add_event_handler('*', array($this, 'msg_Default'));
@@ -381,10 +380,8 @@ class AMIEventProcess extends TuberiaProcess
     private function _quitarBreakAgente($sAgente)
     {
         $a = $this->_listaAgentes->buscar('agentchannel', $sAgente);
-        if (!is_null($a)) {
-            if (!is_null($a->id_break)) {
-                $a->clearBreak($this->_ami);
-            }
+        if (!is_null($a) && !is_null($a->id_break)) {
+            $a->clearBreak($this->_ami);
         }
     }
 
@@ -518,11 +515,9 @@ class AMIEventProcess extends TuberiaProcess
                             $this->_log->output("DEBUG: AgentLogin({$listaECCP[4]}) ".
                                 "llamada contestada, esperando clave de agente...");
                         }
-                    } else {
-                        if ($this->DEBUG) {
-                            $this->_log->output("DEBUG: AgentLogin({$listaECCP[4]}) ".
-                                "llamada ha fallado.");
-                        }
+                    } elseif ($this->DEBUG) {
+                        $this->_log->output("DEBUG: AgentLogin({$listaECCP[4]}) ".
+                            "llamada ha fallado.");
                     }
                 }
                 return TRUE;
@@ -614,11 +609,9 @@ class AMIEventProcess extends TuberiaProcess
 
         // Crear nuevos registros para las nuevas colas aisladas
         foreach ($listaCampaniasAvisar['incoming_queue_new'] as $id => $tupla) {
-            if (!isset($this->_colasEntrantes[$tupla['queue']]))
-                if ($this->DEBUG) {
-                    $this->_log->output('DEBUG: '.__METHOD__.': cola entrante '.
-                        'agregada: '.$tupla['queue']);
-                }
+            if (!isset($this->_colasEntrantes[$tupla['queue']]) && $this->DEBUG)
+                $this->_log->output('DEBUG: '.__METHOD__.': cola entrante '.
+                    'agregada: '.$tupla['queue']);
                 $this->_colasEntrantes[$tupla['queue']] = array(
                     'id_queue_call_entry'   =>  $id,
                     'queue'                 =>  $tupla['queue'],
@@ -628,11 +621,9 @@ class AMIEventProcess extends TuberiaProcess
 
         // Crear nuevas campañas que entran en servicio
         foreach ($listaCampaniasAvisar['incoming'] as $id => $tupla) {
-            if (!isset($this->_colasEntrantes[$tupla['queue']]))
-                if ($this->DEBUG) {
-                    $this->_log->output('DEBUG: '.__METHOD__.': cola entrante '.
-                        'agregada: '.$tupla['queue']);
-                }
+            if (!isset($this->_colasEntrantes[$tupla['queue']]) && $this->DEBUG)
+                $this->_log->output('DEBUG: '.__METHOD__.': cola entrante '.
+                    'agregada: '.$tupla['queue']);
                 $this->_colasEntrantes[$tupla['queue']] = array(
                     'id_queue_call_entry'   =>  $tupla['id_queue_call_entry'],
                     'queue'                 =>  $tupla['queue'],
@@ -869,7 +860,7 @@ class AMIEventProcess extends TuberiaProcess
                 if ($v) $this->_ami->add_event_handler('*', array($this, 'msg_Default'));
             }
             break;
-        default:
+            default:
             $this->_log->output('WARN: '.__METHOD__.': se ignora clave de config no implementada: '.$k);
             break;
     	}
@@ -1372,7 +1363,7 @@ class AMIEventProcess extends TuberiaProcess
         // Se arma mapa de miembros tal como aparecen en database --> channel
         $arrExt = array();
         foreach ($total_agents as $tupla) {
-            $extension = $tupla['type']{0} . $tupla['number'];
+            $extension = $tupla['type'][0] . $tupla['number'];
             $arrExt[$extension] = $tupla['type'].'/'.$tupla['number'];
         }
 
@@ -1380,10 +1371,8 @@ class AMIEventProcess extends TuberiaProcess
         $dynmembers = array();
         foreach (array_keys($db_output) as $k) {
             $regs = NULL;
-            if (preg_match('|^/QPENALTY/(\d+)/agents/(\S+)$|', $k, $regs)) {
-                if (isset($arrExt[$regs[2]])) {
-                    $dynmembers[$arrExt[$regs[2]]][$regs[1]] = (int)$db_output[$k];
-                }
+            if (preg_match('|^/QPENALTY/(\d+)/agents/(\S+)$|', $k, $regs) && isset($arrExt[$regs[2]])) {
+                $dynmembers[$arrExt[$regs[2]]][$regs[1]] = (int)$db_output[$k];
             }
         }
 
@@ -1440,9 +1429,9 @@ class AMIEventProcess extends TuberiaProcess
 
         $versionMinima = array(12, 0, 0);
         while (count($versionMinima) < count($this->_asteriskVersion))
-            array_push($versionMinima, 0);
+            $versionMinima[] = 0;
         while (count($versionMinima) > count($this->_asteriskVersion))
-            array_push($this->_asteriskVersion, 0);
+            $this->_asteriskVersion[] = 0;
         $bEventosCola = ($this->_asteriskVersion >= $versionMinima);
 
         // Asumir para Asterisk 12 o superior que siempre se tiene eventos de cola
@@ -1467,6 +1456,7 @@ class AMIEventProcess extends TuberiaProcess
             $this->_ami->Agents($this->_tmp_actionid_agents);
         }
     }
+
 
     public function msg_idNuevaSesionAgente($sFuente, $sDestino,
         $sNombreMensaje, $iTimestamp, $datos)
@@ -1554,14 +1544,12 @@ class AMIEventProcess extends TuberiaProcess
         $this->_log->output('INFO: recibido mensaje de finalización, se desloguean agentes...');
         $this->_finalizandoPrograma = TRUE;
         foreach ($this->_listaAgentes as $a) {
-        	if ($a->estado_consola != 'logged-out') {
-                if (!is_null($this->_ami)) {
-                	if ($a->type == 'Agent') {
-                        $this->_ami->Agentlogoff($a->number);
-                	} else {
-                	    foreach ($a->colas_actuales as $q) $this->_ami->QueueRemove($q, $a->channel);
-                    }
-                }
+        	if ($a->estado_consola != 'logged-out' && !is_null($this->_ami)) {
+                if ($a->type == 'Agent') {
+                       $this->_ami->Agentlogoff($a->number);
+               	} else {
+               	    foreach ($a->colas_actuales as $q) $this->_ami->QueueRemove($q, $a->channel);
+                   }
             }
         }
         $this->_log->output('INFO: esperando a que finalicen todas las llamadas monitoreadas...');
@@ -1889,11 +1877,9 @@ Uniqueid: 1429642067.241008
                     'cola '.$params['Queue'].' de '.$sAgente.
                     ' - no iniciado por requerimiento loginagente.');
             }
-        } else {
-        	if ($this->DEBUG) {
-        		$this->_log->output("DEBUG: ".__METHOD__.": AgentLogin($sAgente) duplicado (múltiples colas), ignorando");
-                $this->_log->output("DEBUG: ".__METHOD__.": EXIT OnAgentlogin");
-        	}
+        } elseif ($this->DEBUG) {
+            $this->_log->output("DEBUG: ".__METHOD__.": AgentLogin($sAgente) duplicado (múltiples colas), ignorando");
+            $this->_log->output("DEBUG: ".__METHOD__.": EXIT OnAgentlogin");
         }
     }
 
@@ -1938,10 +1924,8 @@ Uniqueid: 1429642067.241008
                 $this->_ejecutarLogoffAgente($params['Location'], $a,
                     $params['local_timestamp_received'], $params['Event']);
             }
-        } else {
-            if ($this->DEBUG) {
-                $this->_log->output("DEBUG: ".__METHOD__.": QueueMemberRemoved({$params['Location']}) en estado no-logoneado, ignorando...");
-            }
+        } elseif ($this->DEBUG) {
+            $this->_log->output("DEBUG: ".__METHOD__.": QueueMemberRemoved({$params['Location']}) en estado no-logoneado, ignorando...");
         }
 
         if ($this->_finalizandoPrograma) $this->_verificarFinalizacionLlamadas();
@@ -2055,12 +2039,10 @@ Uniqueid: 1429642067.241008
                 $this->_log->output("ERR: ".__METHOD__.": no se ha ".
                     "cargado información de agente $sAgentNum");
                 $this->_tuberia->msg_SQLWorkerProcess_requerir_nuevaListaAgentes();
-            } else {
-                if ($this->DEBUG) {
-                	$this->_log->output('DEBUG: '.__METHOD__.': llamada '.
-                        'transferida a extensión no monitoreada '.$sChannel.
-                        ', se finaliza seguimiento...');
-                }
+            } elseif ($this->DEBUG) {
+                $this->_log->output('DEBUG: '.__METHOD__.': llamada '.
+                       'transferida a extensión no monitoreada '.$sChannel.
+                       ', se finaliza seguimiento...');
             }
             $llamada->llamadaFinalizaSeguimiento(
                 $params['local_timestamp_received'],
@@ -2162,15 +2144,13 @@ Uniqueid: 1429642067.241008
             		}
             	} elseif ($llamada->actualchannel != $sCanalCandidato) {
                     if (is_null($llamada->timestamp_link)) {
-                		$this->_log->output('WARN: '.__METHOD__.': canal remoto en '.
+                        $this->_log->output('WARN: '.__METHOD__.': canal remoto en '.
+                                  'conflicto, anterior '.$llamada->actualchannel.' nuevo '.
+                                  $sCanalCandidato);
+                    } elseif ($this->DEBUG) {
+                        $this->_log->output('DEBUG: '.__METHOD__.': canal remoto en '.
                             'conflicto, anterior '.$llamada->actualchannel.' nuevo '.
-                            $sCanalCandidato);
-                    } else {
-                        if ($this->DEBUG) {
-                            $this->_log->output('DEBUG: '.__METHOD__.': canal remoto en '.
-                                'conflicto, anterior '.$llamada->actualchannel.' nuevo '.
-                                $sCanalCandidato.', se ignora por ser luego de Link.');
-                        }
+                            $sCanalCandidato.', se ignora por ser luego de Link.');
                     }
             	}
             }
@@ -2293,17 +2273,15 @@ Uniqueid: 1429642067.241008
             $llamada->llamadaFinalizaSeguimiento(
                 $params['local_timestamp_received'],
                 $this->_config['dialer']['llamada_corta']);
-        } else {
-            if ($llamada->status == 'OnHold') {
-                if ($this->DEBUG) {
-                    $this->_log->output('DEBUG: '.__METHOD__.': se ignora Hangup para llamada que se envía a HOLD.');
-                }
-            } else {
-                // Llamada ha sido enlazada al menos una vez
-                $llamada->llamadaFinalizaSeguimiento(
-                    $params['local_timestamp_received'],
-                    $this->_config['dialer']['llamada_corta']);
+        } elseif ($llamada->status == 'OnHold') {
+            if ($this->DEBUG) {
+                $this->_log->output('DEBUG: '.__METHOD__.': se ignora Hangup para llamada que se envía a HOLD.');
             }
+        } else {
+            // Llamada ha sido enlazada al menos una vez
+            $llamada->llamadaFinalizaSeguimiento(
+                $params['local_timestamp_received'],
+                $this->_config['dialer']['llamada_corta']);
         }
     }
 
@@ -2491,10 +2469,8 @@ Uniqueid: 1429642067.241008
             $a = $this->_listaAgentes->buscar('agentchannel', $sAgente);
             if (!is_null($a)) {
                 $this->_evaluarPertenenciaColas($a, $estadoCola);
-            } else {
-                if ($this->DEBUG) {
-                    $this->_log->output('WARN: agente '.$sAgente.' no es un agente registrado en el callcenter, se ignora');
-                }
+            } elseif ($this->DEBUG) {
+                $this->_log->output('WARN: agente '.$sAgente.' no es un agente registrado en el callcenter, se ignora');
             }
         }
 
@@ -2539,7 +2515,6 @@ Uniqueid: 1429642067.241008
                     $a->asyncQueuePause($this->_ami, FALSE, $cola);
                 }
             }
-
             $diffcolas = $a->diferenciaColasDinamicas();
             if (is_array($diffcolas)) {
 
@@ -2617,10 +2592,8 @@ Uniqueid: 1429642067.241008
         if (!is_null($a)) {
             // TODO: existe $params['Paused'] que indica si está en pausa
             $a->actualizarEstadoEnCola($params['Queue'], $params['Status']);
-        } else {
-            if ($this->DEBUG) {
-                $this->_log->output('WARN: agente '.$params['Location'].' no es un agente registrado en el callcenter, se ignora');
-            }
+        } elseif ($this->DEBUG) {
+            $this->_log->output('WARN: agente '.$params['Location'].' no es un agente registrado en el callcenter, se ignora');
         }
     }
 
@@ -2727,7 +2700,6 @@ Uniqueid: 1429642067.241008
                      * la contraseña se ve como AGENT_LOGGEDOFF y no debe de
                      * tocarse.
                      */
-
                     if ($a->estado_consola == 'logged-in') {
                         $this->_log->output('WARN: '.__METHOD__.' agente '.$sAgente.
                             ' está logoneado en dialer pero en estado AGENT_LOGGEDOFF,'.

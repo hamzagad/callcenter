@@ -34,12 +34,12 @@
 function leerInfoLlamada($db, $sTipoLlamada, $idCampania, $idLlamada)
 {
     switch ($sTipoLlamada) {
-    case 'incoming':
-        return _leerInfoLlamadaIncoming($db, $idCampania, $idLlamada);
-    case 'outgoing':
-        return _leerInfoLlamadaOutgoing($db, $idCampania, $idLlamada);
-    default:
-        return NULL;
+        case 'incoming':
+            return _leerInfoLlamadaIncoming($db, $idCampania, $idLlamada);
+        case 'outgoing':
+            return _leerInfoLlamadaOutgoing($db, $idCampania, $idLlamada);
+        default:
+            return NULL;
     }
 }
 
@@ -279,12 +279,10 @@ function construirEventoPauseEnd($db, $sAgente, $id_audit_break, $pause_class)
 
 function cargarInfoPausa($db, &$infoAgente, &$recordset)
 {
-    if (!is_null($infoAgente['id_audit_break'])) {
-        if (is_null($recordset)) {
-            $recordset = $db->prepare(
-                'SELECT audit.datetime_init, break.name '.
-                'FROM audit, break WHERE audit.id_break = break.id AND audit.id = ?');
-        }
+    if (!is_null($infoAgente['id_audit_break']) && is_null($recordset)) {
+        $recordset = $db->prepare(
+            'SELECT audit.datetime_init, break.name '.
+            'FROM audit, break WHERE audit.id_break = break.id AND audit.id = ?');
     }
     if (!is_null($infoAgente['id_audit_break'])) {
         $recordset->execute(array($infoAgente['id_audit_break']));

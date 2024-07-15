@@ -21,7 +21,7 @@
   +----------------------------------------------------------------------+
   $Id: Llamada.class.php,v 1.48 2009/03/26 13:46:58 alex Exp $ */
 
-class Llamada
+class Llamada 
 {
     // Relaciones con otros objetos conocidos
     private $_log;
@@ -31,17 +31,14 @@ class Llamada
     private $_listaLlamadas;
 
     // Agente que está atendiendo la llamada, o NULL para llamada sin atender
-    var $agente = NULL;
+    public $agente = NULL;
 
     // Campaña a la que pertenece la llamada, o NULL para llamada entrante sin campaña
-    var $campania = NULL;
-
+    public $campania = NULL;
 
     // Propiedades específicas de la llamada
-
     // Tipo de llamada, 'incoming', 'outgoing'
     private $_tipo_llamada;
-
     /* ID en la base de datos de la llamada, o NULL para llamada entrante sin
      * registrar. Esta propiedad es una de las propiedades indexables en
      * ListaLlamadas, junto con _tipo_llamada */
@@ -126,29 +123,29 @@ class Llamada
      * para realizar la transferencia asistida. */
     private $_agentchannel = NULL;
 
-    var $phone;     // Número marcado para llamada saliente o Caller-ID para llamada entrante
+    public $phone;     // Número marcado para llamada saliente o Caller-ID para llamada entrante
     private $_id_current_call;   // ID del registro correspondiente en current_call[_entry]
     private $_waiting_id_current_call = FALSE;  // Se pone a VERDADERO cuando se espera el id_current_call
-    var $request_hold = FALSE;  // Se asigna a VERDADERO al invocar requerimiento hold, y se verifica en Unlink
+    public $request_hold = FALSE;  // Se asigna a VERDADERO al invocar requerimiento hold, y se verifica en Unlink
     private $_park_exten = NULL;// Extensión de lote de parqueo de llamada enviada a hold
 
     // Timestamps correspondientes a diversos eventos de la llamada
     private $_timestamp_originatestart = NULL;   // Inicio de Originate en CampaignProcess
     private $_timestamp_originateend = NULL;     // Recepción de OriginateResponse
-    var $timestamp_enterqueue = NULL;       // Recepción de Join
-    var $timestamp_link = NULL;             // Recepción de primer Link
-    var $timestamp_hangup = NULL;           // Recepción de Hangup
+    public $timestamp_enterqueue = NULL;       // Recepción de Join
+    public $timestamp_link = NULL;             // Recepción de primer Link
+    public $timestamp_hangup = NULL;           // Recepción de Hangup
 
     // Lista de canales auxiliares asociados a la llamada.
-    var $AuxChannels = array();
+    public $AuxChannels = array();
 
     // ID de la cola de campaña entrante. Sólo para llamadas entrantes
-    var $id_queue_call_entry = NULL;
+    public $id_queue_call_entry = NULL;
 
     private $_queuenumber = NULL;
 
     // Referencia al agente agendado
-    var $agente_agendado = NULL;
+    public $agente_agendado = NULL;
 
     // Actualizaciones pendientes en la base de datos por faltar id_llamada
     private $_actualizacionesPendientes = array();
@@ -431,13 +428,11 @@ class Llamada
             break;
         case 'timestamp_originatestart':
             $this->_timestamp_originatestart = $v;
-            if ($this->_stillborn && !is_null($this->timestamp_originateend)) {
-                /* Esta asignación se hace al ejecutar el callback _cb_Originate.
-                 * Por lo tanto, si la llamada ya recibió el Hangup, se la debe
-                 * quitar de la lista de seguimiento. */
-                if (!($this->_status == 'Failure' && is_null($this->_failure_cause))) {
-                    $this->_listaLlamadas->remover($this);
-                }
+            /* Esta asignación se hace al ejecutar el callback _cb_Originate.
+             * Por lo tanto, si la llamada ya recibió el Hangup, se la debe
+             * quitar de la lista de seguimiento. */
+            if ($this->_stillborn && !is_null($this->timestamp_originateend) && !($this->_status == 'Failure' && is_null($this->_failure_cause))) {
+                $this->_listaLlamadas->remover($this);
             }
             break;
         case 'id_current_call':
@@ -537,7 +532,7 @@ class Llamada
     public function marcarLlamada($ami, $sFuente, $iTimeoutOriginate,
         $timestamp, $sContext, $sCID, $sCadenaVar, $retry, $trunk, $precall_events)
     {
-        if (!in_array($this->tipo_llamada, array('outgoing')))
+        if ($this->tipo_llamada != 'outgoing')
             return FALSE;
 
         // Notificar el progreso de la llamada
@@ -714,10 +709,8 @@ class Llamada
 
             /* Remover llamada que no se pudo colocar si ya se ejecutó callback
              * _cb_Originate, y si se tiene una causa de fallo válida. */
-            if (!($this->_stillborn && is_null($this->timestamp_originatestart))) {
-                if (!is_null($this->failure_cause)) {
-                    $this->_listaLlamadas->remover($this);
-                }
+            if (!($this->_stillborn && is_null($this->timestamp_originatestart)) && !is_null($this->failure_cause)) {
+                $this->_listaLlamadas->remover($this);
             }
         } else {
             // Verificar si Onnewchannel procesó pata equivocada

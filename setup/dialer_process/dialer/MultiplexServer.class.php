@@ -126,7 +126,7 @@ class MultiplexServer
         if ($iNumCambio === false) {
             // Interrupción, tal vez una señal
             $this->_oLog->output("INFO: select() finaliza con fallo - señal pendiente?");
-        } elseif ($iNumCambio > 0 || count($listoLeer) > 0 || count($listoEscribir) > 0) {
+        } elseif ($iNumCambio > 0 || $listoLeer !== [] || $listoEscribir !== []) {
             if (in_array($this->_hEscucha, $listoLeer)) {
                 // Entra una conexión nueva
                 $this->_procesarConexionNueva();

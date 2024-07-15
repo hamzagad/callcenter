@@ -24,9 +24,9 @@
 class paloSantoCallsDetail
 {
     private $_DB;   // Conexión a la base de datos
-    var $errMsg;    // Último mensaje de error
+    public $errMsg;    // Último mensaje de error
 
-    function paloSantoCallsDetail(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {
@@ -237,7 +237,8 @@ SQL_OUTGOING;
         $sPeticionSQL .= ' ORDER BY start_date DESC, telefono';
         if (!empty($limit)) {
             $sPeticionSQL .= " LIMIT ? OFFSET ?";
-            array_push($paramSQL, $limit, $offset);
+            $paramSQL[] = $limit;
+            $paramSQL[] = $offset;
         }
 
         // Ejecutar la petición SQL para todos los datos
@@ -320,7 +321,7 @@ SQL_OUTGOING;
         if (in_array($param['calltype'], array('any', 'outgoing'))) {
             // Agregar suma de llamadas salientes
             $tupla = $this->_DB->getFirstRowQuery($sPeticion_outgoing, FALSE, $param_outgoing);
-            if (is_array($tupla) && count($tupla) > 0) {
+            if (is_array($tupla) && $tupla !== []) {
                 $iNumRegistros += $tupla[0];
             } elseif (!is_array($tupla)) {
                 $this->errMsg = '(internal) Failed to count CDRs (outgoing) - '.$this->_DB->errMsg;
@@ -330,7 +331,7 @@ SQL_OUTGOING;
         if (in_array($param['calltype'], array('any', 'incoming'))) {
             // Agregar suma de llamadas entrantes
             $tupla = $this->_DB->getFirstRowQuery($sPeticion_incoming, FALSE, $param_incoming);
-            if (is_array($tupla) && count($tupla) > 0) {
+            if (is_array($tupla) && $tupla !== []) {
                 $iNumRegistros += $tupla[0];
             } elseif (!is_array($tupla)) {
                 $this->errMsg = '(internal) Failed to count CDRs (incoming) - '.$this->_DB->errMsg;
@@ -394,7 +395,7 @@ SQL_OUTGOING;
 
         // TODO: volver configurable
         $recordingpath = '/var/spool/asterisk/monitor';
-        if ($tupla['recordingfile']{0} != '/')
+        if ($tupla['recordingfile'][0] != '/')
             $tupla['recordingfile'] = $recordingpath.'/'.$tupla['recordingfile'];
         return array(
             $tupla['recordingfile'],            // Ruta de archivo real

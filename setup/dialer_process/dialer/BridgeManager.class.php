@@ -23,12 +23,12 @@
 
 class BridgeManager
 {
-	var $DEBUG = FALSE;
+	public $DEBUG = FALSE;
+
+    public $_bridges = array();
     private $_log;
 
-    var $_bridges = array();
-
-    function __construct($log)
+    function __construct($_log)
     {
         $this->_log = $log;
     }

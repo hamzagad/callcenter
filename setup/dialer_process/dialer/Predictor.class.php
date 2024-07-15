@@ -34,18 +34,19 @@ define('AST_DEVICE_ONHOLD',     8);
 
 class Predictor
 {
-    private $_astConn;  // Conexión al Asterisk
+    // Conexión al Asterisk
+    private $_astConn;
     private $_agentesAppQueue = array();    // Agentes ocupados por llamadas de cola
     private $_infoColas = array();          // Información de colas examinadas
     private $_tmp_actionid = NULL;
     private $_enum_complete = TRUE;
-    var $timestamp_examen = 0;
+    public $timestamp_examen = 0;
 
     function __construct($astman)
     {
         $this->_astConn = $astman;
     }
-
+    
     function examinarColas($colas)
     {
         // Manejadores de eventos de interés

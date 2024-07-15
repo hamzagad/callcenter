@@ -27,22 +27,21 @@ define('NUM_LLAMADAS_HISTORIAL_CONTESTADA', 20);
 
 class Campania
 {
-    // Relaciones con otros objetos conocidos
     private $_log;
     private $_tuberia;
 
-    var $id;                // ID en base de datos de la campaña
-    var $name;              // Nombre de la campaña
-    var $queue;             // Número de la cola que recibe las llamadas
-    var $datetime_init;     // Fecha yyyy-mm-dd del inicio de vigencia de campaña
-    var $datetime_end;      // Fecha yyyy-mm-dd del final de vigencia de campaña
-    var $daytime_init;      // Hora hh:mm:ss del inicio del horario de la campaña
-    var $daytime_end;       // Hora hh:mm:ss del final del horario de la campaña
-    var $tipo_campania;     // Tipo de campaña 'outgoing' o 'incoming'
+    public $id;                // ID en base de datos de la campaña
+    public $name;              // Nombre de la campaña
+    public $queue;             // Número de la cola que recibe las llamadas
+    public $datetime_init;     // Fecha yyyy-mm-dd del inicio de vigencia de campaña
+    public $datetime_end;      // Fecha yyyy-mm-dd del final de vigencia de campaña
+    public $daytime_init;      // Hora hh:mm:ss del inicio del horario de la campaña
+    public $daytime_end;       // Hora hh:mm:ss del final del horario de la campaña
+    public $tipo_campania;     // Tipo de campaña 'outgoing' o 'incoming'
 
     // Variables sólo para campañas salientes
-    var $trunk;             // Troncal a usar para la campaña, o NULL para plan marcado
-    var $context;           // Contexto para marcado de la campaña
+    public $trunk;             // Troncal a usar para la campaña, o NULL para plan marcado
+    public $context;           // Contexto para marcado de la campaña
     private $_num_completadas;   // Número de llamadas completadas
     private $_promedio;          // Promedio de la duración de la llamada, en segundos
     private $_desviacion;        // Desviación estándar en el promedio de duración
@@ -53,7 +52,7 @@ class Campania
     private $_iTiempoContestacion = 8;
 
     // Variables sólo para campañas entrantes
-    var $id_queue_call_entry;   // ID de la cola registrada como entrante
+    public $id_queue_call_entry;   // ID de la cola registrada como entrante
 
     function __construct($tuberia, $log)
     {
@@ -107,7 +106,7 @@ class Campania
      */
     function agregarTiempoContestar($iMuestra)
     {
-        array_push($this->_historial_contestada, $iMuestra);
+        $this->_historial_contestada[] = $iMuestra;
         while (count($this->_historial_contestada) > NUM_LLAMADAS_HISTORIAL_CONTESTADA)
             array_shift($this->_historial_contestada);
     }
@@ -120,9 +119,9 @@ class Campania
             $iSuma += $this->_iTiempoContestacion * (NUM_LLAMADAS_HISTORIAL_CONTESTADA - $iNumElems);
             $iNumElems = NUM_LLAMADAS_HISTORIAL_CONTESTADA;
         }
-        $iTiempoContestar = $iSuma / $iNumElems;
 
-        return $iTiempoContestar;
+        $iTiempoContestar = $iSuma / $iNumElems;
+        return $iTiempoContestar;    
     }
 
     // Calcular promedio y desviación estándar
@@ -143,7 +142,7 @@ class Campania
             $iNuevaVariancia = $this->_nuevaVarianciaMuestra($this->_promedio,
                 $iNuevoPromedio, $this->_num_completadas, $this->_variancia,
                 $iDuracionLlamada);
-        } else if ($this->_num_completadas == 1) {
+        } elseif ($this->_num_completadas == 1) {
             $iViejoPromedio = $this->_promedio;
             $iNuevaVariancia =
                 ($iViejoPromedio - $iNuevoPromedio) * ($iViejoPromedio - $iNuevoPromedio) +

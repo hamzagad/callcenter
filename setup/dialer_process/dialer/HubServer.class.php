@@ -30,6 +30,7 @@
  */
 class HubServer extends MultiplexServer
 {
+    public $_log;
     private $_tuberias = array();   // Lista de tuberías, una por cada proceso
     private $_iNumFinalizados = 0;
     private $_inspectores = array();    // Lista de inspectores de mensajes

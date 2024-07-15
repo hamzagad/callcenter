@@ -21,7 +21,7 @@
   +----------------------------------------------------------------------+
   $Id: paloSantoCampaignCC.class.php,v 1.2 2008/06/06 07:15:07 cbarcos Exp $ */
 
-include_once("libs/paloSantoDB.class.php");
+include_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 define('REGEXP_FECHA_VALIDA', '/^\d{4}-\d{2}-\d{2}$/');
 define('REGEXP_HORA_VALIDA', '/^\d{2}:\d{2}$/');
@@ -29,10 +29,10 @@ define('REGEXP_HORA_VALIDA', '/^\d{2}:\d{2}$/');
 /* Clase que implementa campaña (saliente por ahora) de CallCenter (CC) */
 class paloSantoCampaignCC
 {
-    var $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $_DB; // instancia de la clase paloDB
+    public $errMsg;
 
-    function paloSantoCampaignCC(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {
@@ -89,7 +89,7 @@ SQL_SELECT_CAMPAIGNS;
         	$paramWhere[] = 'id = ?';
             $paramSQL[] = $id_campaign;
         }
-        if (count($paramWhere) > 0) $sPeticionSQL .= ' WHERE '.implode(' AND ', $paramWhere);
+        if ($paramWhere !== []) $sPeticionSQL .= ' WHERE '.implode(' AND ', $paramWhere);
         $sPeticionSQL .= ' ORDER BY datetime_init, daytime_init';
         if (!is_null($limit)) {
         	$sPeticionSQL .= ' LIMIT ? OFFSET ?';
@@ -225,9 +225,7 @@ SQL_INSERT_CAMPAIGN;
     function addCampaignForm($id_campania,$formularios)
     {
         if (!is_array($formularios)) {
-            if ($formularios == '')
-                $formularios = array();
-            else $formularios = explode(',', $formularios);
+            $formularios = $formularios == '' ? array() : explode(',', $formularios);
         }
         foreach ($formularios as $id_form) {
         	$r = $this->_DB->genQuery(

@@ -21,12 +21,12 @@
   +----------------------------------------------------------------------+
   $Id: new_campaign.php $ */
 
-require_once "libs/paloSantoForm.class.php";
-require_once "libs/paloSantoTrunk.class.php";
-include_once "libs/paloSantoConfig.class.php";
-include_once "libs/paloSantoGrid.class.php";
+require_once __DIR__ . "/libs/paloSantoForm.class.php";
+require_once __DIR__ . "/libs/paloSantoTrunk.class.php";
+include_once __DIR__ . "/libs/paloSantoConfig.class.php";
+include_once __DIR__ . "/libs/paloSantoGrid.class.php";
 
-require_once "modules/agent_console/libs/issabel2.lib.php";
+require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
 
 /*
   BASE CAMPAIGN
@@ -69,16 +69,16 @@ function _moduleContent(&$smarty, $module_name)
     ));
 
     switch ($sAccion) {
-    case 'new':
-        $contenidoModulo = nuevoBreak($smarty, $module_name, $pDB, $local_templates_dir);
-        break;
-    case 'edit':
-        $contenidoModulo = editarBreak($smarty, $module_name, $pDB, $local_templates_dir);
-        break;    
-    case 'list':
-    default:
-        $contenidoModulo = listBreaks($smarty, $module_name, $pDB, $local_templates_dir);
-        break;
+        case 'new':
+            $contenidoModulo = nuevoBreak($smarty, $module_name, $pDB, $local_templates_dir);
+            break;
+        case 'edit':
+            $contenidoModulo = editarBreak($smarty, $module_name, $pDB, $local_templates_dir);
+            break;    
+        case 'list':
+        default:
+            $contenidoModulo = listBreaks($smarty, $module_name, $pDB, $local_templates_dir);
+            break;
     }
     return $contenidoModulo;
 }
@@ -86,11 +86,11 @@ function _moduleContent(&$smarty, $module_name)
 if (!function_exists('getParameter')) {
 function getParameter($parameter)
 {
-    if(isset($_POST[$parameter]))
+    if (isset($_POST[$parameter])) {
         return $_POST[$parameter];
-    else if(isset($_GET[$parameter]))
+    } elseif (isset($_GET[$parameter])) {
         return $_GET[$parameter];
-    else
+    } else
         return null;
 }
 }
@@ -154,7 +154,7 @@ function listBreaks(&$smarty, $module_name, &$pDB, $local_templates_dir)
         );
     }
     $arrData = array();
-    if (count($arrBreaks) > 0)
+    if ($arrBreaks !== [])
         $arrData = array_map('listBreaks_formatHTML',
             $arrBreaks,
             array_fill(0, count($arrBreaks), array('module_name' => $module_name)));
@@ -253,7 +253,7 @@ function mostrarFormularioModificarBreak(&$smarty, $module_name, $pDB, $local_te
             $smarty->assign("mb_title", _tr("Validation Error"));
             $arrErrores = $oForm->arrErroresValidacion;
             $strErrorMsg = "<b>"._tr('The following fields contain errors').":</b><br/>";
-            if (is_array($arrErrores) && count($arrErrores) > 0) {
+            if (is_array($arrErrores) && $arrErrores !== []) {
                 $strErrorMsg .= implode(', ', array_keys($arrErrores));
             }
             $smarty->assign("mb_message", $strErrorMsg);
@@ -273,10 +273,9 @@ function mostrarFormularioModificarBreak(&$smarty, $module_name, $pDB, $local_te
 
     // Mostrar el formulario con los valores
     $smarty->assign('icon', 'images/kfaxview.png');
-    $contenidoModulo = $oForm->fetchForm(
+    return $oForm->fetchForm(
         "$local_templates_dir/new.tpl",
         $bNuevoBreak ? _tr('New Break') : _tr('Edit Break'),
         $_POST);
-    return $contenidoModulo;
 }
 ?>

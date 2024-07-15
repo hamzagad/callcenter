@@ -24,19 +24,19 @@
 if (file_exists("/var/lib/asterisk/agi-bin/phpagi-asmanager.php")) {
     include_once "/var/lib/asterisk/agi-bin/phpagi-asmanager.php";
 } elseif (file_exists('libs/phpagi-asmanager.php')) {
-	include_once 'libs/phpagi-asmanager.php';
+	include_once __DIR__ . '/libs/phpagi-asmanager.php';
 } else {
 	die('Unable to find phpagi-asmanager.php');
 }
-include_once("libs/paloSantoDB.class.php");
+include_once(__DIR__ . "/libs/paloSantoDB.class.php");
 
 class Agentes
 {
-    var $arrAgents;
+    public $arrAgents;
     private $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $errMsg;
 
-    function Agentes(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {
@@ -234,7 +234,7 @@ class Agentes
 
     function deleteAgent($id_agent)
     {
-        if (!ereg('^[[:digit:]]+$', $id_agent)) {
+        if (!preg_match('/^[0-9]+$/', $id_agent)) {
             $this->errMsg = '(internal) Invalid agent information';
             return FALSE;
         }
@@ -286,8 +286,8 @@ class Agentes
                 elseif ($bMembers) {
                 	$regs = NULL;
                     if (preg_match('/^\s*(\S+\/\S+)/', $sLinea, $regs)) {
-                    	if (!in_array($regs[1], $listaAgentes)) $listaAgentes[] = $regs[1];
-                    } else if (preg_match('/^\s*\S+\s+\(\S+\s+from\s+(\S+\/\S+)\)/', $sLinea, $regs)) {
+                        if (!in_array($regs[1], $listaAgentes)) $listaAgentes[] = $regs[1];
+                    } elseif (preg_match('/^\s*\S+\s+\(\S+\s+from\s+(\S+\/\S+)\)/', $sLinea, $regs)) {
                         if (!in_array($regs[1], $listaAgentes)) $listaAgentes[] = $regs[1];
                     }
                 }
@@ -300,7 +300,7 @@ class Agentes
     {
         $this->errMsg = NULL;
 
-        if (!(is_array($arrAgentes) && count($arrAgentes) > 0)) {
+        if (!(is_array($arrAgentes) && $arrAgentes !== [])) {
             $this->errMsg = "Lista de agentes no válida";
             return FALSE;
         }
@@ -375,8 +375,7 @@ class Agentes
         }
         $extensiones = array();
         $recordset = $dbFreepbx->fetchTable(
-            'SELECT data FROM sip WHERE keyword = "Dial" UNION '.
-            'SELECT data FROM iax WHERE keyword = "Dial"',
+            'SELECT data FROM sip WHERE keyword = "Dial" UNION SELECT data FROM iax WHERE keyword = "Dial"',
             TRUE);
         if (!is_array($recordset)) {
             $this->errMsg = 'No se pueden consultar extensiones en FreePBX - '.$dbFreepbx->errMsg;

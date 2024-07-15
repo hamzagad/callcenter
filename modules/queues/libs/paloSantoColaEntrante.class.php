@@ -25,9 +25,9 @@
 class paloSantoColaEntrante
 {
     private $_DB; // instancia de la clase paloDB
-    var $errMsg;
+    public $errMsg;
 
-    function paloSantoColaEntrante(&$pDB)
+    function __construct(&$pDB)
     {
         // Se recibe como parámetro una referencia a una conexión paloDB
         if (is_object($pDB)) {
@@ -62,7 +62,7 @@ class paloSantoColaEntrante
         }
         
         // Selección de estado de la cola
-        if (!is_null($status) && $status!='all') {
+        if (!is_null($status) && $status != 'all') {
             if (!in_array($status, array('A', 'I'))) {
                 $this->errMsg = '(internal) Invalid status, must be A,I';
                 return false;

@@ -39,7 +39,7 @@ class ListaAgentes implements IteratorAggregate
     	$this->_tuberia = $tuberia;
         $this->_log = $log;
     }
-
+    
     function numLlamadas() { return count($this->_agentes); }
 
     function nuevoAgente($idAgente, $iNumero, $sNombre, $bEstatus, $sType)

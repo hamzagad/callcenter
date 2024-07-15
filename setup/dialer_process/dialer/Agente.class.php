@@ -114,13 +114,14 @@ class Agente
      * penalty en cada cola. */
     private $_colas_dinamicas = array();
 
-    var $llamada_agendada = NULL;
+    public $llamada_agendada = NULL;
 
     // Timestamp de inicio de login, debe setearse a NULL al entrar a estado logged-in
     private $_logging_inicio = NULL;
 
     function __construct(ListaAgentes $lista, $idAgente, $iNumero, $sNombre,
-        $bEstatus, $sType, $tuberia, $log)
+        $bEstatus, $sType, $tuberia, // Relaciones con otros objetos conocidos
+        $_log)
     {
         $this->_listaAgentes = $lista;
         $this->_id_agent = (int)$idAgente;
@@ -489,13 +490,13 @@ class Agente
             'oncall'            =>  !is_null($this->llamada),
             'clientchannel'     =>  is_null($this->llamada) ? NULL : $this->llamada->actualchannel,
             'waitedcallinfo'    =>  ((!is_null($this->llamada_agendada))
-                ? array(
+            ? array(
                     'calltype'          =>  $this->llamada_agendada->tipo_llamada,
                     'campaign_id'       =>  $this->llamada_agendada->campania->id,
                     'callid'            =>  $this->llamada_agendada->id_llamada,
                     'status'            =>  $this->llamada_agendada->status,
-                )
-                : NULL),
+            )
+            : NULL),
         );
     }
 
@@ -532,7 +533,7 @@ class Agente
         $this->_estado_agente_colas = $nuevoEstado;
         asort($this->_estado_agente_colas);
 
-        return (count($colas_agregadas) > 0 || count($colas_quitadas) > 0);
+        return ($colas_agregadas !== [] || $colas_quitadas !== []);
     }
 
     public function actualizarEstadoEnCola($queue, $status)
@@ -562,7 +563,7 @@ class Agente
         $this->_colas_dinamicas = $lista;
         ksort($this->_colas_dinamicas);
 
-        return (count($colas_agregadas) > 0 || count($colas_quitadas) > 0);
+        return ($colas_agregadas !== [] || $colas_quitadas !== []);
     }
 
     public function diferenciaColasDinamicas()
@@ -584,7 +585,7 @@ class Agente
     public function hayColasDinamicasLogoneadas()
     {
         $currcolas = array_keys($this->_estado_agente_colas);
-        return (count(array_intersect($currcolas, $this->colas_dinamicas)) > 0);
+        return (array_intersect($currcolas, $this->colas_dinamicas) !== []);
     }
 
     public function nuevaMembresiaCola()

@@ -21,10 +21,10 @@
   +----------------------------------------------------------------------+
   $Id: index.php,v 1.2 2008/06/07 06:28:13 cbarcos Exp $ */
 
-require_once("libs/paloSantoGrid.class.php");
-require_once("libs/Agentes.class.php");
+require_once(__DIR__ . "/libs/paloSantoGrid.class.php");
+require_once(__DIR__ . "/libs/Agentes.class.php");
 
-require_once "modules/agent_console/libs/issabel2.lib.php";
+require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
 
 function _moduleContent(&$smarty, $module_name)
 {
@@ -32,7 +32,7 @@ function _moduleContent(&$smarty, $module_name)
 
     //include module files
     include_once "modules/$module_name/configs/default.conf.php";
-    include_once "modules/agent_console/configs/default.conf.php"; // For asterisk AMI credentials
+    include_once __DIR__ . "/modules/agent_console/configs/default.conf.php"; // For asterisk AMI credentials
 
     global $arrConf;
     global $arrConfig;
@@ -54,18 +54,17 @@ function _moduleContent(&$smarty, $module_name)
     if (isset($_GET['action'])) $sAction = $_GET['action'];
 
     switch ($sAction) {
-    case 'new_agent':
-        $contenidoModulo = newAgent($pDB, $smarty, $module_name, $local_templates_dir);
-        break;
-    case 'edit_agent':
-        $contenidoModulo = editAgent($pDB, $smarty, $module_name, $local_templates_dir);
-        break;
-    case 'list_agents':
-    default:
-        $contenidoModulo = listAgent($pDB, $smarty, $module_name, $local_templates_dir);
-        break;
+        case 'new_agent':
+            $contenidoModulo = newAgent($pDB, $smarty, $module_name, $local_templates_dir);
+            break;
+        case 'edit_agent':
+            $contenidoModulo = editAgent($pDB, $smarty, $module_name, $local_templates_dir);
+            break;
+        case 'list_agents':
+        default:
+            $contenidoModulo = listAgent($pDB, $smarty, $module_name, $local_templates_dir);
+            break;
     }
-
     return $contenidoModulo;
 }
 
@@ -220,7 +219,7 @@ function formEditAgent($pDB, $smarty, $module_name, $local_templates_dir, $id_ag
         }
     }
 
-    require_once("libs/paloSantoForm.class.php");
+    require_once(__DIR__ . "/libs/paloSantoForm.class.php");
     $arrFormElements = getFormAgent($smarty, $oAgentes, $arrAgente, !is_null($id_agent));
 
     // Valores por omisión para primera carga
@@ -310,11 +309,10 @@ function formEditAgent($pDB, $smarty, $module_name, $local_templates_dir, $id_ag
     }
 
     $smarty->assign('icon', 'images/user.png');
-    $contenidoModulo = $oForm->fetchForm(
+    return $oForm->fetchForm(
         "$local_templates_dir/new.tpl",
         is_null($id_agent) ? _tr("New callback extension") : _tr('Edit agent').' "'.$_POST['description'].'"',
         $_POST);
-    return $contenidoModulo;
 }
 
 function getFormAgent(&$smarty, $oAgentes, $arrAgente, $bEdit)
@@ -339,8 +337,7 @@ function getFormAgent(&$smarty, $oAgentes, $arrAgente, $bEdit)
         $arrExtensions[$sChannel] = $sChannel;
         asort($arrExtensions);
     }
-
-    $arrFormElements = array(
+    return array(
         "description" => array(
             "LABEL"                  => ""._tr('Name')."",
             "EDITABLE"               => "yes",
@@ -392,7 +389,6 @@ function getFormAgent(&$smarty, $oAgentes, $arrAgente, $bEdit)
             "VALIDATION_TYPE"        => "text",
             "VALIDATION_EXTRA_PARAM" => ""),
     );
-    return $arrFormElements;
 }
 
 ?>

@@ -21,14 +21,14 @@
   +----------------------------------------------------------------------+
   $Id: index.php,v 1.1.1.1 2007/07/06 21:31:21 gcarrillo Exp $ */
 
-require_once "libs/paloSantoGrid.class.php";
-require_once "libs/paloSantoDB.class.php";
-require_once "libs/paloSantoForm.class.php";
-require_once "libs/paloSantoConfig.class.php";
-require_once "libs/paloSantoQueue.class.php";
-require_once "libs/misc.lib.php";
+require_once __DIR__ . "/libs/paloSantoGrid.class.php";
+require_once __DIR__ . "/libs/paloSantoDB.class.php";
+require_once __DIR__ . "/libs/paloSantoForm.class.php";
+require_once __DIR__ . "/libs/paloSantoConfig.class.php";
+require_once __DIR__ . "/libs/paloSantoQueue.class.php";
+require_once __DIR__ . "/libs/misc.lib.php";
 
-require_once "modules/agent_console/libs/issabel2.lib.php";
+require_once __DIR__ . "/modules/agent_console/libs/issabel2.lib.php";
 
 function _moduleContent(&$smarty, $module_name)
 {
@@ -47,12 +47,12 @@ function _moduleContent(&$smarty, $module_name)
     $pDB = new paloDB($cadena_dsn);
 
     switch (getParameter('action')) {
-    case 'download':
-        return downloadRecording($smarty, $module_name, $pDB);
-    default:
-        return reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir);
+        case 'download':
+            return downloadRecording($smarty, $module_name, $pDB);
+        default:
+            return reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir);
+        }
     }
-}
 
 function reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir)
 {
@@ -113,7 +113,7 @@ function reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir)
     $campaignOut = $oCallsDetail->getCampaigns('outgoing');
 
     $urlVars = array('menu' => $module_name);
-    $arrFormElements = createFieldFilter($comboAgentes, $comboColas, $callType, $campaignIn, $campaignOut);
+    $arrFormElements = createFieldFilter();
     $oFilterForm = new paloForm($smarty, $arrFormElements);
 
     // Validar y aplicar las variables de filtro
@@ -176,11 +176,7 @@ function reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir)
                 // Si se quiere avanzar a la sgte. pagina
                 if (isset($_GET['nav']) && $_GET['nav'] == "end") {
                     // Mejorar el sgte. bloque.
-                    if (($total%$limit)==0) {
-                        $offset = $total - $limit;
-                    } else {
-                        $offset = $total - $total % $limit;
-                    }
+                    $offset = ($total%$limit)==0 ? $total - $limit : $total - $total % $limit;
                 }
 
                 // Si se quiere avanzar a la sgte. pagina
@@ -232,21 +228,19 @@ function reportCallsDetail($smarty, $module_name, $pDB, $local_templates_dir)
                         foreach ($cdr[12] as $rec) {
                             $downloadlinks[] = '<a href="?menu='.$module_name.
                                 '&amp;action=download&amp;id='.$rec['id'].'&amp;rawmode=yes">'.
-                                ((count($downloadlinks) > 0 ? $rec['datetime_entry'] : _tr('Download'))).'</a>';
+                                (($downloadlinks !== [] ? $rec['datetime_entry'] : _tr('Download'))).'</a>';
                         }
                         if (count($downloadlinks) == 0) {
                             $s = '';
                         } elseif (count($downloadlinks) == 1) {
                             $s = $downloadlinks[0];
-                        } else {
-                            if (count($downloadlinks) > 0) {
-                                $s = '<div class="callcenter-recordings collapsed" >'.
-                                     '<div title="'._tr('Click to expand or collapse').'">'._tr('Other').': '.(count($downloadlinks) - 1).'</div>';
-                                for ($i = 0; $i < count($downloadlinks); $i++) {
-                                    $s .= '<div'.(($i > 0) ? ' class="collapsable"' : '').'>'.$downloadlinks[$i].'</div>';
-                                }
-                                $s .= '</div>';
+                        } elseif ($downloadlinks !== []) {
+                            $s = '<div class="callcenter-recordings collapsed" >'.
+                                 '<div title="'._tr('Click to expand or collapse').'">'._tr('Other').': '.(count($downloadlinks) - 1).'</div>';
+                            foreach ($downloadlinks as $i => $downloadlink) {
+                                $s .= '<div'.(($i > 0) ? ' class="collapsable"' : '').'>'.$downloadlink.'</div>';
                             }
+                            $s .= '</div>';
                         }
                         $tupla[] = $s;
                     }
@@ -404,8 +398,7 @@ function createFieldFilter($comboAgentes, $comboColas, $arrCallType, $campaignIn
             (($tuplaCampania['estatus'] != 'A') ? '('.$tuplaCampania['estatus'].') ' : '').
             $tuplaCampania['name'];
     }
-
-    $arrFormElements = array(
+    return array(
         "date_start"  => array(
             "LABEL"                  => _tr('Start Date'),
             "REQUIRED"               => "yes",
@@ -474,7 +467,6 @@ function createFieldFilter($comboAgentes, $comboColas, $arrCallType, $campaignIn
             'ONCHANGE'                  =>  'submit();',
         ),
     );
-    return $arrFormElements;
 }
 
 function formatoSegundos($iSeg)
