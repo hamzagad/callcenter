@@ -315,7 +315,7 @@ class Services_JSON
                             $char = pack('C*', $ord_var_c,
                                          ord($var[$c + 1]),
                                          ord($var[$c + 2]),
-                                         ord($var{$c + 3}));
+                                         ord($var[$c + 3]));
                             $c += 3;
                             $utf16 = $this->utf82utf16($char);
                             $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -327,8 +327,8 @@ class Services_JSON
                             $char = pack('C*', $ord_var_c,
                                          ord($var[$c + 1]),
                                          ord($var[$c + 2]),
-                                         ord($var{$c + 3}),
-                                         ord($var{$c + 4}));
+                                         ord($var[$c + 3]),
+                                         ord($var[$c + 4]));
                             $c += 4;
                             $utf16 = $this->utf82utf16($char);
                             $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -340,9 +340,9 @@ class Services_JSON
                             $char = pack('C*', $ord_var_c,
                                          ord($var[$c + 1]),
                                          ord($var[$c + 2]),
-                                         ord($var{$c + 3}),
-                                         ord($var{$c + 4}),
-                                         ord($var{$c + 5}));
+                                         ord($var[$c + 3]),
+                                         ord($var[$c + 4]),
+                                         ord($var[$c + 5]));
                             $c += 5;
                             $utf16 = $this->utf82utf16($char);
                             $ascii .= sprintf('\u%04s', bin2hex($utf16));
